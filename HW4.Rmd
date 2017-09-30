@@ -1,6 +1,6 @@
 ---
-title: "HW4: Team [my team #/name here]"
-author: "[My team member names here]"
+title: "HW4: Team [12]"
+author: "Yunxuan Li, Wenxin Liao, Yan Zhao"
 date: "Due October 13, 2017"
 output:
   pdf_document: default
@@ -60,12 +60,18 @@ College.test = College[-train,]
 
 1. Create scatter plots of predictors versus `Apps` using the training data only.  If you use pairs or preferably `ggpairs` make sure that `Apps` is on the y-axis in plots versus the other predictors.  (Make sure that the plots are legible, which may require multiple plots.)  
 Comment on any features in the plots, such as potential outliers, non-linearity, needs for transformations etc.
+```{r}
+ggpairs(College.train,columns=c(1,3:5,2))
+ggpairs(College.train,columns=c(6:9,2))
+ggpairs(College.train,columns=c(10:13,2))
+ggpairs(College.train,columns=c(14:16,18,2))
+```
 
 2.  Build a linear regression model to predict `Apps` from the other predictors using the training data.  Present model summaries and diagnostic plots.   Based on diagnostic plots  using residuals,  comment on the  adequacy of your model.
 
 
 
-3. Generate 1000 replicate data sets using the coefficients from the model you fit above.  Using RMSE as a statistic, $\sqrt{\sum_i(y^{\text{rep}} - \hat{y}_i^{\text{rep}})^2/n }$, how does the RMSE from the model based on the training data compare to RMSE's based on the replicated data.  What does this suggest about model adequacy?   Provide a histogram of the RMSE's with a line showing the location of the observed RMSE and compute a p-value.  Hint:  write a function to calculate RMSE.
+3. Generate 1000 replicate data sets using the coefficients from the model you fit above.  Using RMSE as a statistic, $$\sqrt{\sum_i(y^{\text{rep}} - \hat{y}_i^{\text{rep}})^2/n }$$, how does the RMSE from the model based on the training data compare to RMSE's based on the replicated data.  What does this suggest about model adequacy?   Provide a histogram of the RMSE's with a line showing the location of the observed RMSE and compute a p-value.  Hint:  write a function to calculate RMSE.
 
 4. Build a second model, considering transformations of the response and predictors, possible interactions, etc with the goal of trying to achieve  a model where assumptions for linear regression are satisfied, providing justification for your choices.
 Comment on  how well the assumptions are met and and issues that diagnostic plots may reveal.
