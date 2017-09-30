@@ -84,7 +84,7 @@ College.train.rmca$Private<-NULL
 College.train.rmca$perc.alumni<-College.train.rmca$perc.alumni+1
 bcn_k<-powerTransform(as.matrix(College.train.rmca[,-2])~.,family="bcnPower",data=College.train.rmca)
 #boxTidwell(Apps~.,data=College.train.rmca)
-
+powerTransform(College.train.rmca)
 ```
 5.  Repeat the predictive checks described in problem 3, but using your model from problem 4.  If you transform the response, you will need to back transform  data to the original units in order to compute the RMSE in the original units.  Does this suggest that the model is adequate?  Do the two graphs provide information about which model is better?
 
