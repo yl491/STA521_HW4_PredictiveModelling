@@ -14,6 +14,7 @@ suppressMessages(library(arm))
 suppressMessages(library(ggplot2))
 suppressMessages(library(dplyr))
 suppressMessages(library(GGally))
+library(car)
 library(knitr)
 # post on piazza for additional packages if there are wercker build errors due to missing packages
 ```
@@ -75,7 +76,16 @@ ggpairs(College.train,columns=c(14:16,18,2))
 
 4. Build a second model, considering transformations of the response and predictors, possible interactions, etc with the goal of trying to achieve  a model where assumptions for linear regression are satisfied, providing justification for your choices.
 Comment on  how well the assumptions are met and and issues that diagnostic plots may reveal.
+```{r}
+College.train.rmca<-College.train
+College.train.rmca$college<-NULL
+College.train.rmca$Elite<-NULL
+College.train.rmca$Private<-NULL
+College.train.rmca$perc.alumni<-College.train.rmca$perc.alumni+1
+bcn_k<-powerTransform(as.matrix(College.train.rmca[,-2])~.,family="bcnPower",data=College.train.rmca)
+#boxTidwell(Apps~.,data=College.train.rmca)
 
+```
 5.  Repeat the predictive checks described in problem 3, but using your model from problem 4.  If you transform the response, you will need to back transform  data to the original units in order to compute the RMSE in the original units.  Does this suggest that the model is adequate?  Do the two graphs provide information about which model is better?
 
 6. Use your two fitted models to predict the number of applications for the testing data, `College.test`.  Plot the predicted residuals $y_i - \hat{y}_i$  versus the predictions.  Are there any cases where the model does a poor job of predicting?  Compute the RMSE using the test data
