@@ -36,10 +36,11 @@ Load the college application data from Lab1 and create the variable `Elite` by b
 
 ```{r data}
 library(plyr)
+library(dplyr)
 data(College)
 College = College %>% 
   mutate(college = rownames(College)) %>%
-  mutate(Elite = factor(Top10perc > 50)) %>%
+  mutate(Elite = factor(Top10perc > 50)) 
  # mutate(Elite = 
   #         recode(Elite, "TRUE" = "Yes", "FALSE"="No")) %>%
   #select(c(-Accept, -Enroll))
@@ -78,11 +79,14 @@ ggpairs(College.train,columns=c(14:16,18,2))
 College.train.rmca<-College.train
 College.train.rmca$college<-NULL
 
+College.test.rmca<-College.train
+College.test.rmca$college<-NULL
+
 Col.lm<-lm(Apps~.,data=College.train.rmca)
 summary(Col.lm)
 plot(Col.lm)
 
-anova(Col.lm1)
+anova(Col.lm)
 #YL
 ```
 
@@ -123,8 +127,35 @@ summary(col.glm)
 
 8.  Generate 1000 replicate data sets using the coefficients from the Poisson model you fit above.  Using RMSE as a statistic, $\sqrt{\sum_i(y^{\text{rep}} - \hat{y}_i^{\text{rep}})^2/n }$, how does the RMSE from the model based on the training data compare to RMSE's based on the replicated data.  What does this suggest about model adequacy?   Provide a histogram of the RMSE's with a line showing the location of the observed RMSE and compute a p-value.  
 
-9.  Using the test data set, calculate the RMSE for the test data using the predictions from the Poisson model.  How does this compare to the RMSE based on the observed data?  Is this model better than the linear regression models in terms of out of sample prediction?
+? 1000 replicate data sets
+```{r}
+rmse=function(y,ypred){
+  rmse=sqrt(mean((y-ypred)^2))
+return(rmse)
+}
+col.train.glm <- glm(Apps ~log(F.Undergrad)+I(perc.alumni^2)+Grad.Rate+log(Expend)+log(Room.Board)+Private:Elite, data=College.train,family=poisson(link="log"))
+poi.yhat.train=predict(col.glm,type="response")
 
+
+
+```
+
+
+
+9.  Using the test data set, calculate the RMSE for the test data using the predictions from the Poisson model.  How does this compare to the RMSE based on the observed data?  Is this model better than the linear regression models in terms of out of sample prediction?
+```{r}
+rmse = function(y, ypred) {
+  rmse = sqrt(mean((y - ypred)^2))
+  return(rmse)
+}
+col.train.glm <- glm(Apps ~log(F.Undergrad)+I(perc.alumni^2)+Grad.Rate+log(Expend)+log(Room.Board)+Private:Elite, data=College.train.rmca,family=poisson(link="log"))
+
+poi.yhat.train=predict(col.glm,type="response")
+poi.yhat.test=predict(col.glm,newdata=College.test.rmca,type="response")
+rmse(College.train$Apps, poi.yhat.train)
+
+
+```
 
 10. Build a model using the negative binomial model (consider transformations and interactions if needed) and examine diagnostic plots.  Are there any suggestions of problems with this model?
 
