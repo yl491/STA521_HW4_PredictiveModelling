@@ -100,8 +100,9 @@ sim.fit1=sim(Col.lm,nsim)
 y.rep=array(NA,c(nsim,n))
 for (i in 1:nsim)
 {
-  mu=X %*% sim.fit1@coef[i,]
-  y.rep[i,]=rnorm(n,mean=mu,sd=sim.fit1@sigma[i])
+  #mu=X %*% sim.fit1@coef[i,]
+  #y.rep[i,]=rnorm(n,mean=mu,sd=sim.fit1@sigma[i])
+  y.rep[i,]=X%*%sim.fit1@coef[i,]
 }
 
 rmse=function(y,ypred)
@@ -214,7 +215,30 @@ df=data.frame()
 ```
 13.  Provide a table  with 
 the 1) RMSE's on the observed data, 2) RMSE's on the test data, 3) coverage, 4) the predictive check p-value with one row for each of the  models and comment the results.  Which model do you think is best and why?  Consider the job of an administrator who wants to ensure that there are enough staff to handle reviewing applications.  Explain why coverage might be useful.
+```{r}
+#1 linear model
+#1 observed data
 
+#College.train.rmca$Apps
+results<-matrix(NA,nrow=4,ncol=4)
+Col1_fit<-predict(Col.lm)
+Col2_fit<-predict(Col.lm2)
+
+RMSE_OB1<-rmse(College.train.rmca$Apps,Col1_fit)
+RMSE_OB2<-rmse(College.train$Apps,Col2_fit)
+
+Col1_te<-predict(Col.lm,newdata = College.test)
+Col2_te<-predict(Col.lm2,newdata = College.test)
+RMSE_TE1<-rmse(College.test$Apps,Col1_te)
+RMSE_TE2<-rmse(College.test$Apps,Col2_te)
+
+
+#rmse=function(y,ypred)
+#{
+#  rmse=sqrt(mean((y-ypred)^2))
+#  return(rmse)
+#}
+```
 14.  For your "best" model  provide a nicely formatted table (use `kable()` or `xtable()`) of relative risks and 95% confidence intervals.  Pick 5 of the most important variables and provide a paragraph that provides an interpretation of the parameters (and intervals) that can be provided to a university admissions officer about which variables increase admissions.  
 
 ### Some Theory   
