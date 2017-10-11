@@ -150,7 +150,7 @@ where now RMSE = $\sqrt{\sum_{i = 1}^{n.test}(y_i - \hat{y}_i)^2/n.test}$ where 
 yhat1<-predict(Col.lm,type="response",newdata=College.test)
 College.test$Elite<-mapvalues(College.test$Elite,from=c("Yes","No"),to=c(2,1))
 College.test$Private<-mapvalues(College.test$Private,from=c("Yes","No"),to=c(2,1))
-yhat2<-predict(Col.lm2,type="response",newdata=College.test)
+yhat2<-exp(predict(Col.lm2,type="response",newdata=College.test))
 rmse=function(y,ypred){
   rmse=sqrt(mean((y-ypred)^2))
 return(rmse)
@@ -166,6 +166,9 @@ plot(yhat2,residual2)
 ```
 \
 Model one is better
+For model one, there are some bed prediction, when prediction is near 6000 and one bad when prediction is above 3000.
+For model two, there is a bad prediction when predicted value is around 16000
+For model one, when the predicted value are big, the residual tends to increase. As a result, the model does a poor job of predicting one predicted value are big.
 7.  As the number of applications is a count variable, a Poisson regression model is a natural alternative for modelling this data.   Build a Poisson model using  main effects and possible interactions/transformations.    Comment on the model adequacy based on diagnostic plots and other summaries. Is there evidence that there is lack of fit?
 ```{r}
 col.glm <- glm(Apps ~log(F.Undergrad)+I(perc.alumni^2)+Grad.Rate+log(Expend)+log(Room.Board)+Private:Elite, data=College.train,family=poisson(link="log"))
