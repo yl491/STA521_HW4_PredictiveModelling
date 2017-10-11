@@ -194,7 +194,25 @@ summary(col.glm)
 8.  Generate 1000 replicate data sets using the coefficients from the Poisson model you fit above.  Using RMSE as a statistic, $\sqrt{\sum_i(y^{\text{rep}} - \hat{y}_i^{\text{rep}})^2/n }$, how does the RMSE from the model based on the training data compare to RMSE's based on the replicated data.  What does this suggest about model adequacy?   Provide a histogram of the RMSE's with a line showing the location of the observed RMSE and compute a p-value.  
 
 ? 1000 replicate data sets
+```{r}
+nsim=1000
+n=nrow(College.train)
+X=model.matrix(col.glm)
+sim.apps.glm2=sim(col.glm,nsim)
 
+y.rep=array(NA,c(nsim,n))
+rmses=rep(0,nsim)
+for(i in 1:nsim)
+  mu=exp(X%*%sim.apps.glm2@coef[i,])
+  y.rep[i,]=rpois(n,mu)
+
+col.train.glm <- glm(Apps ~log(F.Undergrad)+I(perc.alumni^2)+Grad.Rate+log(Expend)+log(Room.Board)+Private:Elite, data=College.train,family=poisson(link="log"))
+
+poi.yhat.train=predict(col.glm,type="response")
+
+#L
+
+```
 
 
 9.  Using the test data set, calculate the RMSE for the test data using the predictions from the Poisson model.  How does this compare to the RMSE based on the observed data?  Is this model better than the linear regression models in terms of out of sample prediction?
