@@ -157,6 +157,10 @@ return(rmse)
 }
 r1=rmse(College.test$Apps,yhat1)
 r2=rmse(College.test$Apps,yhat2)
+residual=c()
+residual=College.test$Apps-yhat1
+d1<-data.frame(residual)
+plot(rownames(d1),d1$residual)
 ```
 \
 Model one is better
