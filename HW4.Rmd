@@ -92,7 +92,36 @@ anova(Col.lm)
 
 
 3. Generate 1000 replicate data sets using the coefficients from the model you fit above.  Using RMSE as a statistic, $$\sqrt{\sum_i(y^{\text{rep}} - \hat{y}_i^{\text{rep}})^2/n }$$, how does the RMSE from the model based on the training data compare to RMSE's based on the replicated data.  What does this suggest about model adequacy?   Provide a histogram of the RMSE's with a line showing the location of the observed RMSE and compute a p-value.  Hint:  write a function to calculate RMSE.
+```{r}
+nsim=1000
+n=nrow(College.train.rmca)
+X=model.matrix(Col.lm)
+sim.fit1=sim(Col.lm,nsim)
+y.rep=array(NA,c(nsim,n))
+for (i in 1:nsim)
+{
+  mu=X %*% sim.fit1@coef[i,]
+  y.rep[i,]=rnorm(n,mean=mu,sd=sim.fit1@sigma[i])
+}
 
+rmse=function(y,ypred)
+{
+  rmse=sqrt(mean((y-ypred)^2))
+  return(rmse)
+}
+
+Col.lm.predict<-predict(Col.lm)
+
+rmse.fit1<-apply(y.rep,1,function(y) rmse(y,Col.lm.predict))
+rmse.observations<-rmse(College.train$Apps,Col.lm.predict)
+
+df.fit1<-data.frame(rmse.fit1=rmse.fit1)
+ggplot(df.fit1,aes(x=rmse.fit1))+geom_histogram()+geom_vline(xintercept=rmse.observations,col=2)
+
+round(quantile(rmse.fit1,c(0.025,0.975)),2)
+mean(rmse.observations>rmse.fit1)
+
+```
 4. Build a second model, considering transformations of the response and predictors, possible interactions, etc with the goal of trying to achieve  a model where assumptions for linear regression are satisfied, providing justification for your choices.
 Comment on  how well the assumptions are met and and issues that diagnostic plots may reveal.
 ```{r}
@@ -180,7 +209,9 @@ rmse(College.test$Apps, nb.yhat.test)
 #L
 ```
 12.  While RMSE is a popular summary for model goodness of fit, coverage of confidence intervals is an alternative. For each case in the test set, find a 95% prediction interval.  Now evaluate if the response is in the test data are inside or outside of the intervals.   If we have the correct coverage, we would expect that at least 95\% of the intervals would contain the test cases. Write a function to calculate coverage (the input should be the fitted model object and the test data-frame) and then evaluate coverage for each of the  models that you fit  (the two normal, the  Poisson and the negative binomial).  Include plots of the confidence intervals versus case number ordered by the prediction, with the left out data added as points.  Comment on the plots, highlighting any unusual colleges where the model predicts poorly.
-
+```{r}
+df=data.frame()
+```
 13.  Provide a table  with 
 the 1) RMSE's on the observed data, 2) RMSE's on the test data, 3) coverage, 4) the predictive check p-value with one row for each of the  models and comment the results.  Which model do you think is best and why?  Consider the job of an administrator who wants to ensure that there are enough staff to handle reviewing applications.  Explain why coverage might be useful.
 
