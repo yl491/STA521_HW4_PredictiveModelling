@@ -97,6 +97,8 @@ Answer: plot 1: non-random. needs to transform response and some of the predicto
 
 #NEED ANALYSIS
 3. Generate 1000 replicate data sets using the coefficients from the model you fit above.  Using RMSE as a statistic, $$\sqrt{\sum_i(y^{\text{rep}} - \hat{y}_i^{\text{rep}})^2/n }$$, how does the RMSE from the model based on the training data compare to RMSE's based on the replicated data.  What does this suggest about model adequacy?   Provide a histogram of the RMSE's with a line showing the location of the observed RMSE and compute a p-value.  Hint:  write a function to calculate RMSE.
+
+#Need Analysis
 ```{r}
 
 rmse=function(y,ypred)
@@ -202,6 +204,7 @@ rmse=function(y,ypred){
   rmse=sqrt(mean((y-ypred)^2))
 return(rmse)
 }
+
 r1=rmse(College.test$Apps,yhat1)
 r2=rmse(College.test$Apps,yhat2)
 r1
@@ -303,8 +306,9 @@ plot(col.train.nb)
 
 
 \
-Answer: RMSE of simulated replicates under negative binomial model is 1261.002. The RMSE of train data is 1261.002 and the RMSE of test data is 2666.5.
-#DO YOU RECOMMEND THIS MODEL?
+Answer: The mean value of RMSE of simulated replicates under negative binomial model is 1765.1 The RMSE of train data is 1261.002 and the RMSE of test data is 2666.5. Since the RMSE of train data is significantly smaller than RMSE of test data, it might suggest overfitting of the model.
+For Poission model, RMSE of train data is 1172.726 and the RMSE of test data is 2568.249.
+
 \
 ```{r}
 rmse = function(y, ypred) {
@@ -335,6 +339,7 @@ newlm4<-glm.nb(y.rep~X)#???????
   yhat<-predict(newlm4,type="response")
   rm4[i]<-rmse(y.rep,yhat)
 }
+mean(rm4)
 
 Col.pred4<-predict(col.train.nb,data=College.train,type="response")
 rmse.observations.11<-rmse(College.train$Apps,Col.pred4)
@@ -387,15 +392,11 @@ gp = ggplot(df, aes(x=pred, y=Apps)) +
      geom_point(aes(y=Apps)) +
  xlab("Predicted Unprotected Acts after Intervention at end of Study") +
  ylab("Unprotected Acts after Intervention at end of Study") +
- ggtitle("95% Prediction Intervals under Negative Binomial Model")
+ ggtitle("95% Prediction Intervals under Linear Model 2")
 print(gp)
 
 
 ```
-
-
-
-
 
 Linear Model 2
 ```{r}
@@ -435,7 +436,7 @@ gp = ggplot(df, aes(x=pred, y=Apps)) +
      geom_point(aes(y=Apps)) +
  xlab("Predicted Unprotected Acts after Intervention at end of Study") +
  ylab("Unprotected Acts after Intervention at end of Study") +
- ggtitle("95% Prediction Intervals under Negative Binomial Model")
+ ggtitle("95% Prediction Intervals under Linear Model 2")
 print(gp)
 
 
@@ -494,7 +495,7 @@ gp = ggplot(df, aes(x=pred, y=Apps)) +
 
 print(gp)
 ```
-Comments: Possion model has a narrow 95% confidence interval but the coverage is very low, indicates that the model is not appropriate.
+
 
 Negative Binomial Model
 ```{r}
@@ -556,7 +557,7 @@ gp = ggplot(df, aes(x=pred, y=Apps)) +
 
 print(gp)
 ```
-Comments: the coverage is 95.5% for Negative binomial model, indicate that the 95% data are in the 95% confidence interval and thus, the negative binomial model is appropriate.
+Comments: Looking at all the models. The first model has a coverage of 95.9%. The plot of confidence interval is narrow. For the second linear model, the coverage is 93.3%. The Possion model has a narrow 95% confidence interval but the coverage is very low, indicates that the model is not appropriate.The coverage is 95.5% for Negative binomial model, indicate that the 95% data are in the 95% confidence interval and thus, the negative binomial model is appropriate. The interval of the second linear model is narrower than the nagative model, indicate a more accurate prediction.
 
 
 
