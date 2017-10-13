@@ -282,7 +282,7 @@ As the RMSE for linear model of out of sample prediction is 1381.472, it is not 
 #NEED ANALYSIS
 10. Build a model using the negative binomial model (consider transformations and interactions if needed) and examine diagnostic plots.  Are there any suggestions of problems with this model?
 
-
+Answer:The residual deviance is 597.37 and the degree of freedom is 575. Since the residual deviance is very close to the degree of freedom, we can say the model is not lack of fit. Looking at the residual plots, the point scattered equally above and under the line. And there is no points out of the cook's distance indicate there is no influential points. I did not see if there are any problems with this model
 
 ```{R}
 col.train.nb=glm.nb(Apps ~log(F.Undergrad)+I(perc.alumni^2)+Grad.Rate+log(Expend)+log(Room.Board)+Room.Board:Personal, data=College.train)
