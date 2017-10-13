@@ -192,8 +192,10 @@ ggplot(df.fit2,aes(x=rmse.fit2))+geom_histogram()+geom_vline(xintercept=rmse.obs
 6. Use your two fitted models to predict the number of applications for the testing data, `College.test`.  Plot the predicted residuals $y_i - \hat{y}_i$  versus the predictions.  Are there any cases where the model does a poor job of predicting?  Compute the RMSE using the test data
 where now RMSE = $\sqrt{\sum_{i = 1}^{n.test}(y_i - \hat{y}_i)^2/n.test}$ where the sum is over the test data.  Which model is better for the out of sample prediction?
 ```{r}
-College.test$Elite<-mapvalues(College.test$Elite,from=c("Yes","No"),to=c(2,1))
-College.test$Private<-mapvalues(College.test$Private,from=c("Yes","No"),to=c(2,1))
+#College.test$Elite<-mapvalues(College.test$Elite,from=c("Yes","No"),to=c(2,1))
+#College.test$Private<-mapvalues(College.test$Private,from=c("Yes","No"),to=c(2,1))
+#remove these lines because they generate errors.
+
 yhat1<-predict(Col.lm,type="response",newdata=College.test)
 yhat2<-exp(predict(Col.lm2,type="response",newdata=College.test))
 rmse=function(y,ypred){
@@ -268,7 +270,7 @@ rmse = function(y, ypred) {
   rmse = sqrt(mean((y - ypred)^2))
   return(rmse)
 }
-col.train.glm <- glm(Apps ~log(F.Undergrad)+I(perc.alumni^2)+Grad.Rate+log(Expend)+log(Room.Board)+Private:Elite, data=College.train,family=poisson(link="log"))
+col.train.glm <- glm(Apps ~log(F.Undergrad)+I(perc.alumni^2)+Grad.Rate+log(Expend)+log(Room.Board)+Room.Board:Personal, data=College.train,family=poisson(link="log"))
 
 poi.yhat.train=predict(col.train.glm,type="response")
 poi.yhat.test=predict(col.train.glm,newdata=College.test,type="response")
@@ -278,7 +280,7 @@ rmse(College.test$Apps, poi.yhat.test)
 #L
 ```
 \
-As the RMSE for linear model of out of sample prediction is 1381.472, it is not better.\
+Answer: As the RMSE for linear model of out of sample prediction is 1381.472, it is not better.\
 #NEED ANALYSIS
 10. Build a model using the negative binomial model (consider transformations and interactions if needed) and examine diagnostic plots.  Are there any suggestions of problems with this model?
 
@@ -295,8 +297,10 @@ plot(col.train.nb)
 11. Carry out the predictive checks for the negative model model using simulated replicates with RMSE and add RMSE from the test data and observed data to your plot.  What do these suggest about 1) model adequacy and 2) model comparison?  Which model out of all that you have fit do you recommend?  
 
 
-Unswer: RMSE of simulated replicates under negative binomial model is 1261.002. The RMSE of train data is 1261.002 and the RMSE of test data is 2666.5.
-
+\
+Answer: RMSE of simulated replicates under negative binomial model is 1261.002. The RMSE of train data is 1261.002 and the RMSE of test data is 2666.5.
+#DO YOU RECOMMEND THIS MODEL?
+\
 ```{r}
 rmse = function(y, ypred) {
   rmse = sqrt(mean((y - ypred)^2))
@@ -369,7 +373,7 @@ lm.coverage = rep(NA, K)
 for (i in 1:K) {
  col.train.12 = College[folds != i,]
  col.test.12  = College[folds == i,]
- col.train.lm=lm(Apps~.,data=College.train)
+ col.train.lm1=lm(Apps~.,data=College.train)
 
  pi = pi.lm(col.train.lm1, col.test.12)
 
@@ -556,6 +560,7 @@ RMSE_NB_TE<-rmse(College.test$Apps,Col.nb_te)
 results[,1]<-c(RMSE_OB1,RMSE_OB2,RMSE_GLM,RMSE_NB)
 results[,2]<-c(RMSE_TE1,RMSE_TE2,RMSE_GLM_TE,RMSE_NB_TE)
 results[,3]<-c(pval.lm1,pval.lm2,pval.lm3,pval.lm4)
+results[,4]<-c(mean(lm.coverage),NA,mean(poi.coverage),mean(NB.coverage))
 rownames(results)<-c("lm1","lm2","poisson","neg_bin")
 colnames(results)<-c("RMSE obs","RMSE test","Coverage","p-value")
 
