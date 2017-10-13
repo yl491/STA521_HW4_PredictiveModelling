@@ -95,6 +95,7 @@ anova(Col.lm)
 \
 Answer: plot 1: non-random. needs to transform response and some of the predictors. plot 2: heavier tail - unexplained larger variance. plot 4: no influential points.\
 
+#NEED ANALYSIS
 3. Generate 1000 replicate data sets using the coefficients from the model you fit above.  Using RMSE as a statistic, $$\sqrt{\sum_i(y^{\text{rep}} - \hat{y}_i^{\text{rep}})^2/n }$$, how does the RMSE from the model based on the training data compare to RMSE's based on the replicated data.  What does this suggest about model adequacy?   Provide a histogram of the RMSE's with a line showing the location of the observed RMSE and compute a p-value.  Hint:  write a function to calculate RMSE.
 ```{r}
 
@@ -153,6 +154,13 @@ plot(Col.lm2)
 
 #YL
 ```
+\
+Answer: 1) we choose transformation by the the result of powertransform function, as well as the results of question 1.\
+2) plots analysis: plot 1: much better: no more obvious pattern. plot 2: the heavyness of the tail is reduced.\
+Together, this is a better model. (Notice that the $R^2$ of model 2 is higher than that of model 1)
+\
+
+#NEED ANALYSIS
 5.  Repeat the predictive checks described in problem 3, but using your model from problem 4.  If you transform the response, you will need to back transform  data to the original units in order to compute the RMSE in the original units.  Does this suggest that the model is adequate?  Do the two graphs provide information about which model is better?
 ```{r}
 nsim=1000
@@ -204,17 +212,24 @@ plot(yhat2,residual2)
 
 ```
 \
-Model two is better
-For model one, one bad prediction when predicted value is around 15000.
-For model two, there are bad predictions when predicted value is above 15000
-Both models, when the predicted value are big, the residual tends to increase. As a result, the models do a poor job of predicting one predicted value are big.
+Answer: Model two is better\
+For model one, one bad prediction when predicted value is around 15000.\
+For model two, there are bad predictions when predicted value is above 15000\
+Both models, when the predicted value are big, the residual tends to increase. As a result, the models do a poor job of predicting one predicted value are big.\
 7.  As the number of applications is a count variable, a Poisson regression model is a natural alternative for modelling this data.   Build a Poisson model using  main effects and possible interactions/transformations.    Comment on the model adequacy based on diagnostic plots and other summaries. Is there evidence that there is lack of fit?
 ```{r}
 col.glm <- glm(Apps ~log(F.Undergrad)+I(perc.alumni^2)+Grad.Rate+log(Expend)+log(Room.Board)+Room.Board:Personal, data=College.train,family=poisson(link="log"))
 summary(col.glm)
+plot(col.glm)
 #yl
 ```
+\
+Answer: The poisson model is not very good: although plot 1 does not demonstrate pattern, the QQplot shows a heavy tail (lack of fit), and plot 4 shows there are many influential points.\
+Looking at the residual deviance, 181277 >> 575 df: also an evidence of lack of fit.
+\
 
+
+#NEED ANALYSIS
 8.  Generate 1000 replicate data sets using the coefficients from the Poisson model you fit above.  Using RMSE as a statistic, $\sqrt{\sum_i(y^{\text{rep}} - \hat{y}_i^{\text{rep}})^2/n }$, how does the RMSE from the model based on the training data compare to RMSE's based on the replicated data.  What does this suggest about model adequacy?   Provide a histogram of the RMSE's with a line showing the location of the observed RMSE and compute a p-value.  
 
 
@@ -263,7 +278,8 @@ rmse(College.test$Apps, poi.yhat.test)
 #L
 ```
 \
-As the RMSE for linear model of out of sample prediction is 1381.472, it is not better.
+As the RMSE for linear model of out of sample prediction is 1381.472, it is not better.\
+#NEED ANALYSIS
 10. Build a model using the negative binomial model (consider transformations and interactions if needed) and examine diagnostic plots.  Are there any suggestions of problems with this model?
 ```{R}
 col.train.nb=glm.nb(Apps ~log(F.Undergrad)+I(perc.alumni^2)+Grad.Rate+log(Expend)+log(Room.Board)+Room.Board:Personal, data=College.train)
@@ -272,6 +288,7 @@ plot(col.train.nb)
 
 #L
 ```
+#NEED ANALYSIS
 11. Carry out the predictive checks for the negative model model using simulated replicates with RMSE and add RMSE from the test data and observed data to your plot.  What do these suggest about 1) model adequacy and 2) model comparison?  Which model out of all that you have fit do you recommend?  
 ```{r}
 rmse = function(y, ypred) {
@@ -295,18 +312,24 @@ rm4<-c()
 for (i in 1:nsim) {
 mu = exp(X %*% sim.hiv.nb@coef[i,])
 y.rep = rnegbin(n, mu=mu, theta=sim.hiv.nb@sigma[i])
-newlm4<-glm.nb(y.rep~X)
+newlm4<-glm.nb(y.rep~X)#???????
   yhat<-predict(newlm4,type="response")
   rm4[i]<-rmse(y.rep,yhat)
 }
+
+
+
+Col.pred4<-predict(col.train.nb,data=College.train,type="response")
+rmse.observations<-rmse(College.train$Apps,Col.pred4)
 pval.lm4=sum(rm4>rmse.observations)/length(rm4)
 pval.lm4
-Col.lm.predict4<-predict(col.train.nb,data=College.train,type="response")
-rmse.observations<-rmse(College.train$Apps,Col.lm.predict4)
+
+
 
 df.fit4<-data.frame(rmse.fit4=rm4)
 ggplot(df.fit4,aes(x=rmse.fit4))+geom_histogram()+geom_vline(xintercept=rmse.observations,col=2)
 ```
+#UNDONE AND ANALYSIS NEEDS
 12.  While RMSE is a popular summary for model goodness of fit, coverage of confidence intervals is an alternative. For each case in the test set, find a 95% prediction interval.  Now evaluate if the response is in the test data are inside or outside of the intervals.   If we have the correct coverage, we would expect that at least 95\% of the intervals would contain the test cases. Write a function to calculate coverage (the input should be the fitted model object and the test data-frame) and then evaluate coverage for each of the  models that you fit  (the two normal, the  Poisson and the negative binomial).  Include plots of the confidence intervals versus case number ordered by the prediction, with the left out data added as points.  Comment on the plots, highlighting any unusual colleges where the model predicts poorly.
 ```{r}
 
@@ -369,6 +392,7 @@ gp = ggplot(df, aes(x=pred, y=Apps)) +
 
 print(gp)
 ```
+#WAITING FOR Coverage
 13.  Provide a table  with 
 the 1) RMSE's on the observed data, 2) RMSE's on the test data, 3) coverage, 4) the predictive check p-value with one row for each of the  models and comment the results.  Which model do you think is best and why?  Consider the job of an administrator who wants to ensure that there are enough staff to handle reviewing applications.  Explain why coverage might be useful.
 ```{r}
@@ -407,11 +431,13 @@ RMSE_NB_TE<-rmse(College.test$Apps,Col.nb_te)
 
 results[,1]<-c(RMSE_OB1,RMSE_OB2,RMSE_GLM,RMSE_NB)
 results[,2]<-c(RMSE_TE1,RMSE_TE2,RMSE_GLM_TE,RMSE_NB_TE)
-results[,3]<-c(pval.lm1,pval.lm2,pval.lm3,)
+results[,3]<-c(pval.lm1,pval.lm2,pval.lm3,pval.lm4)
 rownames(results)<-c("lm1","lm2","poisson","neg_bin")
 colnames(results)<-c("RMSE obs","RMSE test","Coverage","p-value")
 
 ```
+
+#NEED ANALYSIS
 14.  For your "best" model  provide a nicely formatted table (use `kable()` or `xtable()`) of relative risks and 95% confidence intervals.  Pick 5 of the most important variables and provide a paragraph that provides an interpretation of the parameters (and intervals) that can be provided to a university admissions officer about which variables increase admissions.  
 ```{r}
 table<-matrix(NA,20,3)
@@ -446,4 +472,24 @@ Y \mid \mu, \theta & \sim NB(\mu, \theta)
 \end{align}
 Derive the density of $Y \mid \mu, \theta$ in (8) showing your work using LaTeX expressions.  (Note this may not display if the output format is html, so please use pdf.)
 Using iterated expectations with the Gamma-Poisson mixture, find the mean and variance of $Y$, showing your work.
+
+$$p(Y\mid \mu,\theta) =\int p(Y\mid \lambda) * p(\lambda | \theta, \theta/\mu)* d\lambda$$
+$$= \int \frac{\lambda^y * e^{-\lambda}}{y!}*\frac{(\theta/\mu)^{\theta}}{\gamma(\theta)}*\lambda^{\theta-1}*e^{-\lambda*\theta/\mu}d\lambda$$ 
+$$=\frac{(\theta/\mu)^\theta}{y!\gamma(\theta)}*\int\lambda^{y+\theta-1}*e^{-\lambda(1+\theta/\mu)d\lambda}$$
+$$=\frac{(\theta/\mu)^\theta}{y!\gamma(\theta)}*\frac{\gamma(y+\theta)}{(1+\theta/\mu)^{y+\theta}}$$
+$$=\frac{\gamma(y+\theta)}{y!*\gamma(\theta)}*(\frac{\theta}{\theta+\mu})^\theta*(\frac{\mu}{\mu+\theta})^y$$
+$$\propto Negative Binomial(\mu,\theta)$$
+
+
+$$E(Y\mid \mu,\theta)=E[E(Y|\lambda,\mu,\theta)|\mu,\theta]$$
+$$=E[\lambda|\mu,\theta]$$
+$$=\mu$$ Because $\lambda$ is a gamma distribution.
+
+
+$$Var(Y|\mu,\theta)=E[Var(Y|\mu,\theta)\mid\mu,\theta]+Var[E(Y|\mu,\theta)\mid \mu,\theta]$$
+$$=E[\lambda\mid\mu,\theta]+Var[\lambda\mid\mu,\theta]$$
+$$=\mu-\mu^2/\theta$$
+#YL
+
+
 
