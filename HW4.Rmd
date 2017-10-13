@@ -239,15 +239,16 @@ Looking at the residual deviance, 181277 >> 575 df: also an evidence of lack of 
 nsim=1000
 n=nrow(College.train)
 X=model.matrix(col.glm)
+class(col.glm)<-"glm"
 sim.apps.glm2=sim(col.glm,nsim)
 rm3=c()
-for(i in 1:nsim){
+for(i in 1:nsim){1
   mu=exp(X%*%sim.apps.glm2@coef[i,])
   y.rep=rpois(n,lambda=mu)
-   newlm3<-glm(y.rep~X,family=poisson(link="log"))
-   yhat<-predict(newlm3,type="response")
+   #newlm3<-glm(y.rep~X,family=poisson(link="log"))
+   #yhat<-predict(newlm3,type="response")
   
-  rm3[i]<-rmse(y.rep,yhat)
+    rm3[i]<-rmse(y.rep,mu)
   }
   
 
@@ -255,10 +256,14 @@ poi.yhat.train=predict(col.glm,type="response")
 rmse.observations<-rmse(College.train$Apps,poi.yhat.train)
 pval.lm3=sum(rm3>rmse.observations)/length(rm3)
 df.fit3<-data.frame(rmse.fit3=rm3)
-ggplot(df.fit3,aes(x=df.fit3$rmse.fit3))+geom_histogram()+geom_vline(xintercept=rmse.observations,col=2)
+#ggplot(df.fit3,aes(x=df.fit3$rmse.fit3))+geom_histogram()+geom_vline(xintercept=rmse.observations,col=2)#
+#use hist instead. - YL
+hist(rm3)
+abline(v=rmse.observations,col="red")
 pval.lm3
 
 
+mean(rm3>rmse.observations)
 #L
 
 ```
@@ -307,13 +312,13 @@ rmse = function(y, ypred) {
   return(rmse)
 }
 
-col.train.nb=glm.nb(Apps ~log(F.Undergrad)+I(perc.alumni^2)+Grad.Rate+log(Expend)+log(Room.Board)+Room.Board:Personal, data=College.train)
+#col.train.nb=glm.nb(Apps ~log(F.Undergrad)+I(perc.alumni^2)+Grad.Rate+log(Expend)+log(Room.Board)+Room.Board:Personal, data=College.train)
 
-nb.yhat.train=predict(col.train.nb,type="response")
-nb.yhat.test=predict(col.train.nb,newdata=College.test,type="response")
+#nb.yhat.train=predict(col.train.nb,type="response")
+#nb.yhat.test=predict(col.train.nb,newdata=College.test,type="response")
 
-rn<-rmse(College.train$Apps, nb.yhat.train)
-rnt<-rmse(College.test$Apps, nb.yhat.test)
+#rn<-rmse(College.train$Apps, nb.yhat.train)
+#rnt<-rmse(College.test$Apps, nb.yhat.test)
 ```
 
 ```{r}
@@ -321,8 +326,7 @@ n = nrow(College.train)
 X = model.matrix(col.train.nb)
 class(col.train.nb) <- "glm" # over-ride class of "glm.nb"
 sim.hiv.nb = sim(col.train.nb, nsim) # use GLM to generate beta's
-sim.hiv.nb@sigma = rnorm(nsim, col.train.nb$theta,
-col.train.nb$SE.theta) # add slot for theta overide sigma
+sim.hiv.nb@sigma = rnorm(nsim, col.train.nb$theta, col.train.nb$SE.theta) # add slot for theta overide sigma
 rm4<-c()
 for (i in 1:nsim) {
 mu = exp(X %*% sim.hiv.nb@coef[i,])
@@ -339,6 +343,9 @@ pval.lm4
 
 df.fit4<-data.frame(rmse.fit4=rm4)
 ggplot(df.fit4,aes(x=rmse.fit4))+geom_histogram()+geom_vline(xintercept=rmse.observations,col=2)
+
+hist(rm4)
+abline(v=rmse.observations.11)
 ```
 
 12.  While RMSE is a popular summary for model goodness of fit, coverage of confidence intervals is an alternative. For each case in the test set, find a 95% prediction interval.  Now evaluate if the response is in the test data are inside or outside of the intervals.   If we have the correct coverage, we would expect that at least 95\% of the intervals would contain the test cases. Write a function to calculate coverage (the input should be the fitted model object and the test data-frame) and then evaluate coverage for each of the  models that you fit  (the two normal, the  Poisson and the negative binomial).  Include plots of the confidence intervals versus case number ordered by the prediction, with the left out data added as points.  Comment on the plots, highlighting any unusual colleges where the model predicts poorly.
