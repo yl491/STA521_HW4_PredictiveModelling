@@ -126,7 +126,10 @@ pval.lm1=sum(rm>rmse.observations)/length(rm)
 df.fit1<-data.frame(rmse.fit1=rm)
 ggplot(df.fit1,aes(x=rmse.fit1))+geom_histogram()+geom_vline(xintercept=rmse.observations,col=2)
 
+<<<<<<< HEAD
 round(quantile(rmse.fit1,c(0.025,0.975)),2)
+=======
+>>>>>>> 608b03cf9397ce18e85181f60a9194292e38348d
 
 p_col1<-mean(rmse.observations<rm)
 
@@ -165,19 +168,19 @@ for (i in 1:nsim)
 
   mu=X2 %*% sim.fit2@coef[i,]
   y.rep=rnorm(n,mean=mu,sd=sim.fit2@sigma[i])
- 
+ yt=exp(y.rep)
   newlm<-lm(y.rep~X)
-  yhat<-(predict.lm(newlm))
-  rm2[i]<-rmse(y.rep,yhat)
+  yhat<-predict.lm(newlm)
+ yhat<-exp(yhat)
+  rm2[i]<-rmse(yt,yhat)
 }
-Col.lm.predict2<-predict(Col.lm2,data=College.train)
+Col.lm.predict2<-exp(predict(Col.lm2,data=College.train))
 rmse.observations<-rmse(College.train$Apps,Col.lm.predict2)
-
+pval.lm2=sum(rm2>rmse.observations)/length(rm2)
 df.fit2<-data.frame(rmse.fit2=rm2)
 ggplot(df.fit2,aes(x=rmse.fit2))+geom_histogram()+geom_vline(xintercept=rmse.observations,col=2)
 
-round(quantile(rmse.fit2,c(0.025,0.975)),2)
-mean(rmse.observations>rmse.fit2)
+
 ```
 6. Use your two fitted models to predict the number of applications for the testing data, `College.test`.  Plot the predicted residuals $y_i - \hat{y}_i$  versus the predictions.  Are there any cases where the model does a poor job of predicting?  Compute the RMSE using the test data
 where now RMSE = $\sqrt{\sum_{i = 1}^{n.test}(y_i - \hat{y}_i)^2/n.test}$ where the sum is over the test data.  Which model is better for the out of sample prediction?
