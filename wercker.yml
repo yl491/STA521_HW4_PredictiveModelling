@@ -9,4 +9,4 @@ build:
     - script:
         name: Render R markdown
         code: |
-          Rscript -e "library(rmarkdown);render('HW4.Rmd')"
+          Rscript -e "install.packages('reshape2', repos='https://cloud.r-project.org');install.packages('alr3', repos='https://cloud.r-project.org');library(rmarkdown);render('HW4.Rmd')"
