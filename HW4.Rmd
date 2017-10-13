@@ -73,6 +73,9 @@ ggpairs(College.train,columns=c(10:13,2))
 ggpairs(College.train,columns=c(14:16,18,2))
 #yl
 ```
+\
+Answer: outliers in undegrad, books, expends; potential predictors: f-undergrad, top 25 perc, phd(non-linear), terminal(non-linear), gradrate. those predictors with non-linear relationships many need to be transformed.
+\
 
 2.  Build a linear regression model to predict `Apps` from the other predictors using the training data.  Present model summaries and diagnostic plots.   Based on diagnostic plots  using residuals,  comment on the  adequacy of your model.
 ```{r}
@@ -89,38 +92,11 @@ plot(Col.lm)
 anova(Col.lm)
 #YL
 ```
-
+\
+Answer: plot 1: non-random. needs to transform response and some of the predictors. plot 2: heavier tail - unexplained larger variance. plot 4: no influential points.\
 
 3. Generate 1000 replicate data sets using the coefficients from the model you fit above.  Using RMSE as a statistic, $$\sqrt{\sum_i(y^{\text{rep}} - \hat{y}_i^{\text{rep}})^2/n }$$, how does the RMSE from the model based on the training data compare to RMSE's based on the replicated data.  What does this suggest about model adequacy?   Provide a histogram of the RMSE's with a line showing the location of the observed RMSE and compute a p-value.  Hint:  write a function to calculate RMSE.
 ```{r}
-nsim=1000
-n=nrow(College.train.rmca)
-X=model.matrix(Col.lm)
-sim.fit1=sim(Col.lm,nsim)
-y.rep=array(NA,c(nsim,n))
-for (i in 1:nsim)
-{
-  #mu=X %*% sim.fit1@coef[i,]
-  #y.rep[i,]=rnorm(n,mean=mu,sd=sim.fit1@sigma[i])
-  y.rep[i,]=X%*%sim.fit1@coef[i,]
-}
-
-rmse=function(y,ypred)
-{
-  rmse=sqrt(mean((y-ypred)^2))
-  return(rmse)
-}
-
-Col.lm.predict<-predict(Col.lm)
-
-rmse.fit1<-apply(y.rep,1,function(y) rmse(y,Col.lm.predict))
-rmse.observations<-rmse(College.train$Apps,Col.lm.predict)
-
-df.fit1<-data.frame(rmse.fit1=rmse.fit1)
-ggplot(df.fit1,aes(x=rmse.fit1))+geom_histogram()+geom_vline(xintercept=rmse.observations,col=2)
-
-round(quantile(rmse.fit1,c(0.025,0.975)),2)
-mean(rmse.observations>rmse.fit1)
 
 ```
 4. Build a second model, considering transformations of the response and predictors, possible interactions, etc with the goal of trying to achieve  a model where assumptions for linear regression are satisfied, providing justification for your choices.
