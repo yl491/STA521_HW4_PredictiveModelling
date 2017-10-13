@@ -127,7 +127,12 @@ pval.lm1
 df.fit1<-data.frame(rmse.fit1=rm)
 ggplot(df.fit1,aes(x=rmse.fit1))+geom_histogram()+geom_vline(xintercept=rmse.observations,col=2)
 
+<<<<<<< HEAD
+round(quantile(rmse.fit1,c(0.025,0.975)),2)
+=======
+>>>>>>> 608b03cf9397ce18e85181f60a9194292e38348d
 
+p_col1<-mean(rmse.observations<rm)
 
 ```
 4. Build a second model, considering transformations of the response and predictors, possible interactions, etc with the goal of trying to achieve  a model where assumptions for linear regression are satisfied, providing justification for your choices.
@@ -379,12 +384,12 @@ coverage=function(y,pi){
 
 results<-matrix(NA,nrow=4,ncol=4)
 Col1_fit<-predict(Col.lm)
-#Col2_fit<-predict(Col.lm2)
+Col2_fit<-predict(Col.lm2)
 Col.glm_fit<-predict(col.glm,type="response")
 Col.nb_fit<-predict(col.train.nb,type="response")
 
 RMSE_OB1<-rmse(College.train.rmca$Apps,Col1_fit)
-#RMSE_OB2<-rmse(College.train$Apps,Col2_fit)
+RMSE_OB2<-rmse(College.train$Apps,Col2_fit)
 RMSE_GLM<-rmse(College.train$Apps,Col.glm_fit)
 RMSE_NB<-rmse(College.train$Apps,Col.nb_fit)
 
@@ -398,18 +403,16 @@ RMSE_TE2<-rmse(College.test$Apps,Col2_te)
 RMSE_GLM_TE<-rmse(College.test$Apps,Col.glm_te)
 RMSE_NB_TE<-rmse(College.test$Apps,Col.nb_te)
 
-p_col1<-mean(rmse.observations<rm)
-
-col.train.nb
-col.glm
 
 
 
-#rmse=function(y,ypred)
-#{
-#  rmse=sqrt(mean((y-ypred)^2))
-#  return(rmse)
-#}
+
+results[,1]<-c(RMSE_OB1,RMSE_OB2,RMSE_GLM,RMSE_NB)
+results[,2]<-c(RMSE_TE1,RMSE_TE2,RMSE_GLM_TE,RMSE_NB_TE)
+results[,3]<-c(p_col1,)
+rownames(results)<-c("lm1","lm2","poisson","neg_bin")
+colnames(results)<-c("RMSE obs","RMSE test","Coverage","p-value")
+
 ```
 14.  For your "best" model  provide a nicely formatted table (use `kable()` or `xtable()`) of relative risks and 95% confidence intervals.  Pick 5 of the most important variables and provide a paragraph that provides an interpretation of the parameters (and intervals) that can be provided to a university admissions officer about which variables increase admissions.  
 ```{r}
