@@ -103,22 +103,22 @@ nsim=1000
 n=nrow(College.train.rmca)
 X=model.matrix(Col.lm)
 sim.fit1=sim(Col.lm,nsim)
-y.rep=array(NA,c(nsim,n))
 for (i in 1:nsim)
 {
   mu=X %*% sim.fit1@coef[i,]
-  y.rep[i,]=rnorm(n,mean=mu,sd=sim.fit1@sigma[i])
-
+  y.rep=rnorm(n,mean=mu,sd=sim.fit1@sigma[i])
+  newlm<-lm(y.rep~X)
+  yhat<-predict.lm(newlm)
+  rm[i]<-rmse(y.rep,yhat)
 }
 
 
 
 Col.lm.predict<-predict(Col.lm,data=College.train)
 
-rmse.fit1<-apply(y.rep,1,function(y) rmse(y,Col.lm.predict))
 rmse.observations<-rmse(College.train$Apps,Col.lm.predict)
-
-df.fit1<-data.frame(rmse.fit1=rmse.fit1)
+pval.lm1=sum(rm>rmse.observations)/length(rm)
+df.fit1<-data.frame(rmse.fit1=rm)
 ggplot(df.fit1,aes(x=rmse.fit1))+geom_histogram()+geom_vline(xintercept=rmse.observations,col=2)
 
 round(quantile(rmse.fit1,c(0.025,0.975)),2)
@@ -149,23 +149,26 @@ plot(Col.lm2)
 5.  Repeat the predictive checks described in problem 3, but using your model from problem 4.  If you transform the response, you will need to back transform  data to the original units in order to compute the RMSE in the original units.  Does this suggest that the model is adequate?  Do the two graphs provide information about which model is better?
 ```{r}
 nsim=1000
-n=nrow(College.train.rmca)
-X=model.matrix(Col.lm2)
+rm2<-c()
+n=nrow(College.train)
+X2=model.matrix(Col.lm2)
 sim.fit2=sim(Col.lm2,nsim)
-y.rep=array(NA,c(nsim,n))
+
 for (i in 1:nsim)
 {
-  mu=exp(X %*% sim.fit2@coef[i,])
-  y.rep[i,]=rnorm(n,mean=mu,sd=sim.fit2@sigma[i])
-  
+
+  mu=X2 %*% sim.fit2@coef[i,]
+  y.rep=rnorm(n,mean=mu,sd=sim.fit2@sigma[i])
+ 
+  newlm<-lm(y.rep~X)
+  yhat<-(predict.lm(newlm))
+  rm2[i]<-rmse(y.rep,yhat)
 }
 Col.lm.predict2<-predict(Col.lm2,data=College.train)
-
-rmse.fit2<-apply(y.rep,1,function(y) rmse(y,Col.lm.predict2))
 rmse.observations<-rmse(College.train$Apps,Col.lm.predict2)
 
-df.fit1<-data.frame(rmse.fit2=rmse.fit2)
-ggplot(df.fit21,aes(x=rmse.fit2))+geom_histogram()+geom_vline(xintercept=rmse.observations,col=2)
+df.fit2<-data.frame(rmse.fit2=rm2)
+ggplot(df.fit2,aes(x=rmse.fit2))+geom_histogram()+geom_vline(xintercept=rmse.observations,col=2)
 
 round(quantile(rmse.fit2,c(0.025,0.975)),2)
 mean(rmse.observations>rmse.fit2)
@@ -210,19 +213,23 @@ nsim=1000
 n=nrow(College.train)
 X=model.matrix(col.glm)
 sim.apps.glm2=sim(col.glm,nsim)
-
-y.rep=array(NA,c(nsim,n))
-rmses=rep(0,nsim)
-for(i in 1:nsim)
+rm3=c()
+for(i in 1:nsim){
   mu=exp(X%*%sim.apps.glm2@coef[i,])
-  y.rep[i,]=rpois(n,mu)
+  y.rep=rpois(n,mu)
+   newlm3<-lm(y.rep~X)
+  yhat<-(predict.lm(newlm3))
+  rm3[i]<-rmse(y.rep,yhat)
+  }
   
-  
-  
-
-col.train.glm <- glm(Apps ~log(F.Undergrad)+I(perc.alumni^2)+Grad.Rate+log(Expend)+log(Room.Board)+Private:Elite, data=College.train,family=poisson(link="log"))
 
 poi.yhat.train=predict(col.glm,type="response")
+rmse.observations<-rmse(College.train$Apps,poi.yhat.train)
+pval.lm3=sum(rm3>rmse.observations)/length(rm3)
+df.fit3<-data.frame(rmse.fit3=rm3)
+ggplot(df.fit3,aes(x=df.fit3$rmse.fit3))+geom_histogram()+geom_vline(xintercept=rmse.observations,col=2)
+
+
 
 #L
 
