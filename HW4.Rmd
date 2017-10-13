@@ -126,11 +126,6 @@ pval.lm1=sum(rm>rmse.observations)/length(rm)
 df.fit1<-data.frame(rmse.fit1=rm)
 ggplot(df.fit1,aes(x=rmse.fit1))+geom_histogram()+geom_vline(xintercept=rmse.observations,col=2)
 
-<<<<<<< HEAD
-=======
-round(quantile(rmse.fit1,c(0.025,0.975)),2)
-mean(rmse.observations<rm)
->>>>>>> f2f966732c28d66944d14dd3fa68344cd4aa9da3
 
 
 ```
@@ -168,14 +163,15 @@ for (i in 1:nsim)
 
   mu=X2 %*% sim.fit2@coef[i,]
   y.rep=rnorm(n,mean=mu,sd=sim.fit2@sigma[i])
- 
+ yt=exp(y.rep)
   newlm<-lm(y.rep~X)
-  yhat<-(predict.lm(newlm))
-  rm2[i]<-rmse(y.rep,yhat)
+  yhat<-predict.lm(newlm)
+ yhat<-exp(yhat)
+  rm2[i]<-rmse(yt,yhat)
 }
-Col.lm.predict2<-predict(Col.lm2,data=College.train)
+Col.lm.predict2<-exp(predict(Col.lm2,data=College.train))
 rmse.observations<-rmse(College.train$Apps,Col.lm.predict2)
-
+pval.lm2=sum(rm2>rmse.observations)/length(rm2)
 df.fit2<-data.frame(rmse.fit2=rm2)
 ggplot(df.fit2,aes(x=rmse.fit2))+geom_histogram()+geom_vline(xintercept=rmse.observations,col=2)
 
