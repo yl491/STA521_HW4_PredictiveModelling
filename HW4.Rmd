@@ -123,6 +123,7 @@ Col.lm.predict<-predict(Col.lm,data=College.train)
 
 rmse.observations<-rmse(College.train$Apps,Col.lm.predict)
 pval.lm1=sum(rm>rmse.observations)/length(rm)
+pval.lm1
 df.fit1<-data.frame(rmse.fit1=rm)
 ggplot(df.fit1,aes(x=rmse.fit1))+geom_histogram()+geom_vline(xintercept=rmse.observations,col=2)
 
@@ -172,6 +173,7 @@ for (i in 1:nsim)
 Col.lm.predict2<-exp(predict(Col.lm2,data=College.train))
 rmse.observations<-rmse(College.train$Apps,Col.lm.predict2)
 pval.lm2=sum(rm2>rmse.observations)/length(rm2)
+pval.lm2
 df.fit2<-data.frame(rmse.fit2=rm2)
 ggplot(df.fit2,aes(x=rmse.fit2))+geom_histogram()+geom_vline(xintercept=rmse.observations,col=2)
 
@@ -222,9 +224,10 @@ sim.apps.glm2=sim(col.glm,nsim)
 rm3=c()
 for(i in 1:nsim){
   mu=exp(X%*%sim.apps.glm2@coef[i,])
-  y.rep=rpois(n,mu)
-   newlm3<-lm(y.rep~X)
-  yhat<-(predict.lm(newlm3))
+  y.rep=rpois(n,lambda=mu)
+   newlm3<-glm(y.rep~X,family=poisson(link="log"))
+   yhat<-predict(newlm3,type="response")
+  
   rm3[i]<-rmse(y.rep,yhat)
   }
   
@@ -234,7 +237,7 @@ rmse.observations<-rmse(College.train$Apps,poi.yhat.train)
 pval.lm3=sum(rm3>rmse.observations)/length(rm3)
 df.fit3<-data.frame(rmse.fit3=rm3)
 ggplot(df.fit3,aes(x=df.fit3$rmse.fit3))+geom_histogram()+geom_vline(xintercept=rmse.observations,col=2)
-
+pval.lm3
 
 
 #L
@@ -285,14 +288,21 @@ class(col.train.nb) <- "glm" # over-ride class of "glm.nb"
 sim.hiv.nb = sim(col.train.nb, nsim) # use GLM to generate beta's
 sim.hiv.nb@sigma = rnorm(nsim, col.train.nb$theta,
 col.train.nb$SE.theta) # add slot for theta overide sigma
-y.rep = array(NA, c(nsim, nrow(College.train)))
+rm4<-c()
 for (i in 1:nsim) {
 mu = exp(X %*% sim.hiv.nb@coef[i,])
-y.rep[i,] = rnegbin(n, mu=mu, theta=sim.hiv.nb@sigma[i])
-rmse[i]=sqrt(mean((y.rep[i,]-mu)^2))
+y.rep = rnegbin(n, mu=mu, theta=sim.hiv.nb@sigma[i])
+newlm4<-glm.nb(y.rep~X)
+  yhat<-predict(newlm4,type="response")
+  rm4[i]<-rmse(y.rep,yhat)
 }
+pval.lm4=sum(rm4>rmse.observations)/length(rm4)
+pval.lm4
+Col.lm.predict4<-predict(col.train.nb,data=College.train,type="response")
+rmse.observations<-rmse(College.train$Apps,Col.lm.predict4)
 
-
+df.fit4<-data.frame(rmse.fit4=rm4)
+ggplot(df.fit4,aes(x=rmse.fit4))+geom_histogram()+geom_vline(xintercept=rmse.observations,col=2)
 ```
 12.  While RMSE is a popular summary for model goodness of fit, coverage of confidence intervals is an alternative. For each case in the test set, find a 95% prediction interval.  Now evaluate if the response is in the test data are inside or outside of the intervals.   If we have the correct coverage, we would expect that at least 95\% of the intervals would contain the test cases. Write a function to calculate coverage (the input should be the fitted model object and the test data-frame) and then evaluate coverage for each of the  models that you fit  (the two normal, the  Poisson and the negative binomial).  Include plots of the confidence intervals versus case number ordered by the prediction, with the left out data added as points.  Comment on the plots, highlighting any unusual colleges where the model predicts poorly.
 ```{r}
