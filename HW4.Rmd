@@ -126,10 +126,7 @@ pval.lm1=sum(rm>rmse.observations)/length(rm)
 df.fit1<-data.frame(rmse.fit1=rm)
 ggplot(df.fit1,aes(x=rmse.fit1))+geom_histogram()+geom_vline(xintercept=rmse.observations,col=2)
 
-<<<<<<< HEAD
-round(quantile(rmse.fit1,c(0.025,0.975)),2)
-=======
->>>>>>> 608b03cf9397ce18e85181f60a9194292e38348d
+
 
 p_col1<-mean(rmse.observations<rm)
 
@@ -149,7 +146,7 @@ powerTransform(College.train.rmca)
 
 College.train$Elite<-mapvalues(College.train$Elite,from=c("Yes","No"),to=c(2,1))
 College.train$Private<-mapvalues(College.train$Private,from=c("Yes","No"),to=c(2,1))
-Col.lm2<-lm(log(Apps)~log(F.Undergrad)+I(perc.alumni^2)+Grad.Rate+log(Expend)+log(Room.Board),data=na.omit(College.train))
+Col.lm2<-lm(log(Apps)~log(F.Undergrad)+I(perc.alumni^2)+Grad.Rate+log(Expend)+log(Room.Board)+Room.Board:Personal,data=na.omit(College.train))
 summary(Col.lm2)
 plot(Col.lm2)
 
@@ -209,7 +206,7 @@ For model two, there is a bad prediction when predicted value is around 16000
 For model one, when the predicted value are big, the residual tends to increase. As a result, the model does a poor job of predicting one predicted value are big.
 7.  As the number of applications is a count variable, a Poisson regression model is a natural alternative for modelling this data.   Build a Poisson model using  main effects and possible interactions/transformations.    Comment on the model adequacy based on diagnostic plots and other summaries. Is there evidence that there is lack of fit?
 ```{r}
-col.glm <- glm(Apps ~log(F.Undergrad)+I(perc.alumni^2)+Grad.Rate+log(Expend)+log(Room.Board)+Private:Elite, data=College.train,family=poisson(link="log"))
+col.glm <- glm(Apps ~log(F.Undergrad)+I(perc.alumni^2)+Grad.Rate+log(Expend)+log(Room.Board)+Room.Board:Personal, data=College.train,family=poisson(link="log"))
 summary(col.glm)
 #yl
 ```
@@ -264,7 +261,8 @@ rmse(College.test$Apps, poi.yhat.test)
 As the RMSE for linear model of out of sample prediction is 1381.472, it is not better.
 10. Build a model using the negative binomial model (consider transformations and interactions if needed) and examine diagnostic plots.  Are there any suggestions of problems with this model?
 ```{R}
-col.train.nb=glm.nb(Apps ~log(F.Undergrad)+I(perc.alumni^2)+Grad.Rate+log(Expend)+log(Room.Board)+Private:Elite, data=College.train)
+col.train.nb=glm.nb(Apps ~log(F.Undergrad)+I(perc.alumni^2)+Grad.Rate+log(Expend)+log(Room.Board)+Room.Board:Personal, data=College.train)
+summary(col.train.nb)
 plot(col.train.nb)
 
 #L
@@ -329,9 +327,9 @@ NB.coverage = rep(NA, K)
 for (i in 1:K) {
  col.train.12 = College[folds != i,]
  col.test.12  = College[folds == i,]
- col.train.nb=glm.nb(Apps ~log(F.Undergrad)+I(perc.alumni^2)+Grad.Rate+log(Expend)+log(Room.Board)+Private:Elite, data=College.train[,-17])
+ col.train.nb=glm.nb(Apps ~log(F.Undergrad)+I(perc.alumni^2)+Grad.Rate+log(Expend)+log(Room.Board)+Room.Board:Personal, data=College.train)
 
- pi = pi.nb(col.train.nb, col.test.12[,-17])
+ pi = pi.nb(col.train.nb, col.test.12)
  NB.coverage[i] = coverage(col.test.12$Apps, pi)
 }
 mean(NB.coverage)
@@ -397,7 +395,7 @@ RMSE_NB_TE<-rmse(College.test$Apps,Col.nb_te)
 
 results[,1]<-c(RMSE_OB1,RMSE_OB2,RMSE_GLM,RMSE_NB)
 results[,2]<-c(RMSE_TE1,RMSE_TE2,RMSE_GLM_TE,RMSE_NB_TE)
-results[,3]<-c(p_col1,)
+results[,3]<-c(pval.lm1,pval.lm2,pval.lm3,)
 rownames(results)<-c("lm1","lm2","poisson","neg_bin")
 colnames(results)<-c("RMSE obs","RMSE test","Coverage","p-value")
 
