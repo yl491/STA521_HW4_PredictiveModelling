@@ -207,7 +207,7 @@ summary(col.glm)
 
 8.  Generate 1000 replicate data sets using the coefficients from the Poisson model you fit above.  Using RMSE as a statistic, $\sqrt{\sum_i(y^{\text{rep}} - \hat{y}_i^{\text{rep}})^2/n }$, how does the RMSE from the model based on the training data compare to RMSE's based on the replicated data.  What does this suggest about model adequacy?   Provide a histogram of the RMSE's with a line showing the location of the observed RMSE and compute a p-value.  
 
-? 1000 replicate data sets
+
 ```{r}
 nsim=1000
 n=nrow(College.train)
@@ -291,9 +291,49 @@ rmse[i]=sqrt(mean((y.rep[i,]-mu)^2))
 12.  While RMSE is a popular summary for model goodness of fit, coverage of confidence intervals is an alternative. For each case in the test set, find a 95% prediction interval.  Now evaluate if the response is in the test data are inside or outside of the intervals.   If we have the correct coverage, we would expect that at least 95\% of the intervals would contain the test cases. Write a function to calculate coverage (the input should be the fitted model object and the test data-frame) and then evaluate coverage for each of the  models that you fit  (the two normal, the  Poisson and the negative binomial).  Include plots of the confidence intervals versus case number ordered by the prediction, with the left out data added as points.  Comment on the plots, highlighting any unusual colleges where the model predicts poorly.
 ```{r}
 
-df = data.frame(Apps = College.test$Apps, 
+coverage=function(y,pi){
+  mean(y >= pi [,1]&y<=pi[,2])
+}
+pi.nb = function(object, newdata, level=.95, nsim=10000) {
+  require(mvtnorm)
+  n = nrow(newdata)
+  X = model.matrix(object, data=newdata)
+  beta = rmvnorm(nsim, coef(object), vcov(object))  # use GLM to generate beta's
+  theta = rnorm(nsim, object$theta, object$SE.theta) 
+  y.rep = matrix(NA, nsim, n)
+
+  for (i in 1:nsim) {
+    mu = exp(X %*% beta[i,])
+    y.rep[i,] = rnegbin(n, mu=mu, theta=theta[i])
+  }
+
+  pi = t(apply(y.rep, 2, function(x) {
+                       quantile(x, c((1 - level)/2, 
+                                     .5 + level/2))}))
+  return(pi)
+}
+
+K = 10
+f  = ceiling(n/K)  # number of samples in each fold
+folds = sample(rep(1:K, f), n)
+NB.coverage = rep(NA, K)
+for (i in 1:K) {
+ col.train.12 = College[folds != i,]
+ col.test.12  = College[folds == i,]
+ col.train.nb=glm.nb(Apps ~log(F.Undergrad)+I(perc.alumni^2)+Grad.Rate+log(Expend)+log(Room.Board)+Private:Elite, data=College.train[,-17])
+
+ pi = pi.nb(col.train.nb, col.test.12[,-17])
+ NB.coverage[i] = coverage(col.test.12$Apps, pi)
+}
+mean(NB.coverage)
+```
+
+```{r}
+
+
+df = data.frame(Apps = col.test.12$Apps, 
                 pred = predict(col.train.nb,   # training model
-                               College.test.rmca,       # test data
+                               col.test.12[,-17],       # test data
                                type="response"),  # type of prediction =  exp(X beta)
                 lwr = pi[,1], upr=pi[,2]) 
 df = df %>% arrange(pred)   # sort by prediction
@@ -308,7 +348,7 @@ gp = ggplot(df, aes(x=pred, y=Apps)) +
  ggtitle("95% Prediction Intervals under Negative Binomial Model")
 
 
-
+print(gp)
 ```
 13.  Provide a table  with 
 the 1) RMSE's on the observed data, 2) RMSE's on the test data, 3) coverage, 4) the predictive check p-value with one row for each of the  models and comment the results.  Which model do you think is best and why?  Consider the job of an administrator who wants to ensure that there are enough staff to handle reviewing applications.  Explain why coverage might be useful.
