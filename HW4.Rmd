@@ -97,8 +97,7 @@ Answer: plot 1: non-random. needs to transform response and some of the predicto
 
 3. Generate 1000 replicate data sets using the coefficients from the model you fit above.  Using RMSE as a statistic, $$\sqrt{\sum_i(y^{\text{rep}} - \hat{y}_i^{\text{rep}})^2/n }$$, how does the RMSE from the model based on the training data compare to RMSE's based on the replicated data.  What does this suggest about model adequacy?   Provide a histogram of the RMSE's with a line showing the location of the observed RMSE and compute a p-value.  Hint:  write a function to calculate RMSE.
 ```{r}
-<<<<<<< HEAD
-=======
+
 rmse=function(y,ypred)
 {
   rmse=sqrt(mean((y-ypred)^2))
@@ -128,8 +127,8 @@ df.fit1<-data.frame(rmse.fit1=rm)
 ggplot(df.fit1,aes(x=rmse.fit1))+geom_histogram()+geom_vline(xintercept=rmse.observations,col=2)
 
 round(quantile(rmse.fit1,c(0.025,0.975)),2)
-mean(rmse.observations>rmse.fit1)
->>>>>>> ad4d82d77c6ca6a4ca42f8a3cbf9bf04ab28e525
+mean(rmse.observations<rm)
+
 
 ```
 4. Build a second model, considering transformations of the response and predictors, possible interactions, etc with the goal of trying to achieve  a model where assumptions for linear regression are satisfied, providing justification for your choices.
@@ -147,7 +146,7 @@ powerTransform(College.train.rmca)
 
 College.train$Elite<-mapvalues(College.train$Elite,from=c("Yes","No"),to=c(2,1))
 College.train$Private<-mapvalues(College.train$Private,from=c("Yes","No"),to=c(2,1))
-Col.lm2<-lm(log(Apps)~log(F.Undergrad)+I(perc.alumni^2)+Grad.Rate+log(Expend)+log(Room.Board)+Private:Elite,data=College.train)
+Col.lm2<-lm(log(Apps)~log(F.Undergrad)+I(perc.alumni^2)+Grad.Rate+log(Expend)+log(Room.Board),data=na.omit(College.train))
 summary(Col.lm2)
 plot(Col.lm2)
 
@@ -364,17 +363,36 @@ the 1) RMSE's on the observed data, 2) RMSE's on the test data, 3) coverage, 4) 
 #1 observed data
 
 #College.train.rmca$Apps
+coverage=function(y,pi){
+  mean(y >= pi[,1]&y<=pi[,2])
+}
+
 results<-matrix(NA,nrow=4,ncol=4)
 Col1_fit<-predict(Col.lm)
-Col2_fit<-predict(Col.lm2)
+#Col2_fit<-predict(Col.lm2)
+Col.glm_fit<-predict(col.glm,type="response")
+Col.nb_fit<-predict(col.train.nb,type="response")
 
 RMSE_OB1<-rmse(College.train.rmca$Apps,Col1_fit)
-RMSE_OB2<-rmse(College.train$Apps,Col2_fit)
+#RMSE_OB2<-rmse(College.train$Apps,Col2_fit)
+RMSE_GLM<-rmse(College.train$Apps,Col.glm_fit)
+RMSE_NB<-rmse(College.train$Apps,Col.nb_fit)
 
 Col1_te<-predict(Col.lm,newdata = College.test)
-Col2_te<-predict(Col.lm2,newdata = College.test)
+#Col2_te<-predict(Col.lm2,newdata = College.test)
+Col.glm_te<-predict(col.glm,newdata = College.test,type="response")
+Col.nb_te<-predict(col.train.nb, newdata=College.test,type="response")
+
 RMSE_TE1<-rmse(College.test$Apps,Col1_te)
 RMSE_TE2<-rmse(College.test$Apps,Col2_te)
+RMSE_GLM_TE<-rmse(College.test$Apps,Col.glm_te)
+RMSE_NB_TE<-rmse(College.test$Apps,Col.nb_te)
+
+p_col1<-mean(rmse.observations<rm)
+
+col.train.nb
+col.glm
+
 
 
 #rmse=function(y,ypred)
