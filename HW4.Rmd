@@ -349,49 +349,81 @@ abline(v=rmse.observations.11)
 ```
 
 12.  While RMSE is a popular summary for model goodness of fit, coverage of confidence intervals is an alternative. For each case in the test set, find a 95% prediction interval.  Now evaluate if the response is in the test data are inside or outside of the intervals.   If we have the correct coverage, we would expect that at least 95\% of the intervals would contain the test cases. Write a function to calculate coverage (the input should be the fitted model object and the test data-frame) and then evaluate coverage for each of the  models that you fit  (the two normal, the  Poisson and the negative binomial).  Include plots of the confidence intervals versus case number ordered by the prediction, with the left out data added as points.  Comment on the plots, highlighting any unusual colleges where the model predicts poorly.
-
-Linear Model
+Linear Model 1
 ```{r}
+pi.lm = function(object, newdata, level = 0.95, nsim = 10000){
+  n = nrow(newdata)
+  X = model.matrix(object, data = newdata)  
+  sim.lm.1 = sim(object, nsim)
+  y.rep = matrix(NA,nsim,n)
+  for (i in 1:nsim) {
+    y.rep[i,] =rnorm(n,X %*% sim.lm.1@coef[i,],sim.lm.1@sigma[i])
+  }
+  pi = t(apply(y.rep, 2, function(x) {quantile(x, c((1-level)/2, .5+level/2))}))
+  return (pi)
+}
+
 coverage=function(y,pi){
   mean(y >= pi [,1]&y<=pi[,2])
 }
-pi.lm = function(object, newdata, level=.95, nsim=10000) {
-  require(mvtnorm)
+
+
+pi = pi.lm(Col.lm, College.test)
+lm.coverage = coverage(College.test$Apps, pi)
+
+
+
+df = data.frame(Apps = College.test$Apps, 
+                pred = predict(Col.lm,   # training model
+                               College.test,       # test data
+                               type="response"),  # type of prediction =  exp(X beta)
+                lwr = pi[,1], upr=pi[,2]) 
+df = df %>% arrange(pred)   # sort by prediction
+
+
+gp = ggplot(df, aes(x=pred, y=Apps)) + 
+     geom_ribbon(aes(ymin = lwr, ymax = upr), 
+                fill = "blue", alpha = 0.2) + 
+     geom_point(aes(y=Apps)) +
+ xlab("Predicted Unprotected Acts after Intervention at end of Study") +
+ ylab("Unprotected Acts after Intervention at end of Study") +
+ ggtitle("95% Prediction Intervals under Negative Binomial Model")
+print(gp)
+
+
+```
+
+
+
+
+
+Linear Model 2
+```{r}
+pi.lm = function(object, newdata, level = 0.95, nsim = 10000){
   n = nrow(newdata)
-  X = model.matrix(object, data=newdata)
-  beta = rmvnorm(nsim, coef(object), vcov(object))  # use GLM to generate beta's
-  y.rep = matrix(NA, nsim, n)
-
+  X = model.matrix(object, data = newdata)  
+  sim.lm.1 = sim(object, nsim)
+  y.rep = matrix(NA,nsim,n)
   for (i in 1:nsim) {
-    mu = exp(X %*% beta[i,])
-    y.rep[i,] = rnegbin(n, mu=mu, theta=theta[i])
+    y.rep[i,] =exp(rnorm(n,X %*% sim.lm.1@coef[i,],sim.lm.1@sigma[i]))
   }
-
-  pi = t(apply(y.rep, 2, function(x) {
-                       quantile(x, c((1 - level)/2, 
-                                     .5 + level/2))}))
-  return(pi)
+  pi = t(apply(y.rep, 2, function(x) {quantile(x, c((1-level)/2, .5+level/2))}))
+  return (pi)
 }
 
-K = 10
-f  = ceiling(n/K)  # number of samples in each fold
-folds = sample(rep(1:K, f), n)
-lm.coverage = rep(NA, K)
-for (i in 1:K) {
- col.train.12 = College[folds != i,]
- col.test.12  = College[folds == i,]
- col.train.lm1=lm(Apps~.,data=College.train)
-
- pi = pi.lm(col.train.lm1, col.test.12)
-
- lm.coverage[i] = coverage(col.test.12$Apps, pi)
-
+coverage=function(y,pi){
+  mean(y >= pi [,1]&y<=pi[,2])
 }
 
-mean(lm.coverage)
-df = data.frame(Apps = col.test.12$Apps, 
-                pred = predict(col.train.lm,   # training model
-                               col.test.12,       # test data
+
+pi = pi.lm(Col.lm2, College.test)
+lm.coverage = coverage(College.test$Apps, pi)
+
+
+
+df = data.frame(Apps = College.test$Apps, 
+                pred = predict(Col.lm2,   # training model
+                               College.test,       # test data
                                type="response"),  # type of prediction =  exp(X beta)
                 lwr = pi[,1], upr=pi[,2]) 
 df = df %>% arrange(pred)   # sort by prediction
