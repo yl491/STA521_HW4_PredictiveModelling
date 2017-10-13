@@ -461,7 +461,10 @@ pi.poi = function(object, newdata, level=.95, nsim=10000) {
                                      .5 + level/2))}))
   return(pi)
 }
-
+K=10
+f  = ceiling(n/K)  # number of samples in each fold
+folds = sample(rep(1:K, f), n)
+NB.coverage = rep(NA, K)
 poi.coverage = rep(NA, K)
 for (i in 1:K) {
  col.train.12 = College[folds != i,]
