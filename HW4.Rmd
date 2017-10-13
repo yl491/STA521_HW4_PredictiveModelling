@@ -121,8 +121,7 @@ pval.lm1=sum(rm>rmse.observations)/length(rm)
 df.fit1<-data.frame(rmse.fit1=rm)
 ggplot(df.fit1,aes(x=rmse.fit1))+geom_histogram()+geom_vline(xintercept=rmse.observations,col=2)
 
-round(quantile(rmse.fit1,c(0.025,0.975)),2)
-mean(rmse.observations>rmse.fit1)
+
 
 ```
 4. Build a second model, considering transformations of the response and predictors, possible interactions, etc with the goal of trying to achieve  a model where assumptions for linear regression are satisfied, providing justification for your choices.
@@ -170,8 +169,7 @@ rmse.observations<-rmse(College.train$Apps,Col.lm.predict2)
 df.fit2<-data.frame(rmse.fit2=rm2)
 ggplot(df.fit2,aes(x=rmse.fit2))+geom_histogram()+geom_vline(xintercept=rmse.observations,col=2)
 
-round(quantile(rmse.fit2,c(0.025,0.975)),2)
-mean(rmse.observations>rmse.fit2)
+
 ```
 6. Use your two fitted models to predict the number of applications for the testing data, `College.test`.  Plot the predicted residuals $y_i - \hat{y}_i$  versus the predictions.  Are there any cases where the model does a poor job of predicting?  Compute the RMSE using the test data
 where now RMSE = $\sqrt{\sum_{i = 1}^{n.test}(y_i - \hat{y}_i)^2/n.test}$ where the sum is over the test data.  Which model is better for the out of sample prediction?
