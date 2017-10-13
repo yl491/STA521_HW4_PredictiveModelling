@@ -369,7 +369,7 @@ coverage=function(y,pi){
 
 
 pi = pi.lm(Col.lm, College.test)
-lm.coverage = coverage(College.test$Apps, pi)
+lm.coverage1 = coverage(College.test$Apps, pi)
 
 
 
@@ -417,7 +417,7 @@ coverage=function(y,pi){
 
 
 pi = pi.lm(Col.lm2, College.test)
-lm.coverage = coverage(College.test$Apps, pi)
+lm.coverage2 = coverage(College.test$Apps, pi)
 
 
 
@@ -598,12 +598,16 @@ RMSE_NB_TE<-rmse(College.test$Apps,Col.nb_te)
 
 results[,1]<-c(RMSE_OB1,RMSE_OB2,RMSE_GLM,RMSE_NB)
 results[,2]<-c(RMSE_TE1,RMSE_TE2,RMSE_GLM_TE,RMSE_NB_TE)
-results[,3]<-c(pval.lm1,pval.lm2,pval.lm3,pval.lm4)
-results[,4]<-c(mean(lm.coverage),NA,mean(poi.coverage),mean(NB.coverage))
+results[,4]<-c(pval.lm1,pval.lm2,pval.lm3,pval.lm4)
+results[,3]<-c(lm.coverage1,lm.coverage2,mean(poi.coverage),mean(NB.coverage))
 rownames(results)<-c("lm1","lm2","poisson","neg_bin")
 colnames(results)<-c("RMSE obs","RMSE test","Coverage","p-value")
 
+results
 ```
+\
+Answer: I think the best model is the negative binomial, which has a low in-sample RMSE, and the lowest out-of-sample RMSE. The coverage is 95.3%, which is pretty good. Coverage of 95.3% means that 95.5% of the whole sample are within the predicted range, which is a good indicator the total # of applications.
+\
 
 #NEED ANALYSIS
 14.  For your "best" model  provide a nicely formatted table (use `kable()` or `xtable()`) of relative risks and 95% confidence intervals.  Pick 5 of the most important variables and provide a paragraph that provides an interpretation of the parameters (and intervals) that can be provided to a university admissions officer about which variables increase admissions.  
