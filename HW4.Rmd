@@ -226,6 +226,7 @@ Answer: Model two is better\
 For model one, one bad prediction when predicted value is around 15000.\
 For model two, there are bad predictions when predicted value is above 15000\
 Both models, when the predicted value are big, the residual tends to increase. As a result, the models do a poor job of predicting one predicted value are big.\
+
 7.  As the number of applications is a count variable, a Poisson regression model is a natural alternative for modelling this data.   Build a Poisson model using  main effects and possible interactions/transformations.    Comment on the model adequacy based on diagnostic plots and other summaries. Is there evidence that there is lack of fit?
 ```{r}
 col.glm <- glm(Apps ~log(F.Undergrad)+I(perc.alumni^2)+Grad.Rate+log(Expend)+log(Room.Board)+Room.Board:Personal, data=College.train,family=poisson(link="log"))
@@ -242,7 +243,7 @@ Looking at the residual deviance, 181277 >> 575 df: also an evidence of lack of 
 #NEED ANALYSIS
 8.  Generate 1000 replicate data sets using the coefficients from the Poisson model you fit above.  Using RMSE as a statistic, $\sqrt{\sum_i(y^{\text{rep}} - \hat{y}_i^{\text{rep}})^2/n }$, how does the RMSE from the model based on the training data compare to RMSE's based on the replicated data.  What does this suggest about model adequacy?   Provide a histogram of the RMSE's with a line showing the location of the observed RMSE and compute a p-value.  
 
-
+\Answer: the RMSE based on the training data is 1172.726. RMSE based on replicated data is 
 ```{r}
 nsim=1000
 n=nrow(College.train)
@@ -272,11 +273,8 @@ pval.lm3
 
 
 mean(rm3>rmse.observations)
-#L
 
 ```
-
-
 9.  Using the test data set, calculate the RMSE for the test data using the predictions from the Poisson model.  How does this compare to the RMSE based on the observed data?  Is this model better than the linear regression models in terms of out of sample prediction?
 ```{r}
 rmse = function(y, ypred) {
@@ -293,8 +291,8 @@ rmse(College.test$Apps, poi.yhat.test)
 #L
 ```
 \
-Answer: As the RMSE for linear model of out of sample prediction is 1381.472, it is not better.\
-#NEED ANALYSIS
+Answer: The RMSE base on traing data is 1173 while the RMSE base on test data is 2568, which indicate the possiblility of over fitting of the model. Also, as the RMSE for linear model of out of sample prediction is 1381.472, the possion model is not better than the linear model.\
+
 10. Build a model using the negative binomial model (consider transformations and interactions if needed) and examine diagnostic plots.  Are there any suggestions of problems with this model?
 
 Answer:The residual deviance is 597.37 and the degree of freedom is 575. Since the residual deviance is very close to the degree of freedom, we can say the model is not lack of fit. Looking at the residual plots, the point scattered equally above and under the line. And there is no points out of the cook's distance indicate there is no influential points. I did not see if there are any problems with this model
@@ -312,7 +310,7 @@ plot(col.train.nb)
 
 \
 Answer: The mean value of RMSE of simulated replicates under negative binomial model is 1765.1 The RMSE of train data is 1261.002 and the RMSE of test data is 2666.5. Since the RMSE of train data is significantly smaller than RMSE of test data, it might suggest overfitting of the model.
-For Poission model, RMSE of train data is 1172.726 and the RMSE of test data is 2568.249.
+For Possion model, RMSE of train data is 1172.726 and the RMSE of test data is 2568.249. The negative binomial is better than the possion model.
 
 \
 ```{r}
@@ -381,7 +379,7 @@ coverage=function(y,pi){
 
 
 pi = pi.lm(Col.lm, College.test)
-lm.coverage = coverage(College.test$Apps, pi)
+lm.coverage1 = coverage(College.test$Apps, pi)
 
 
 
@@ -425,7 +423,7 @@ coverage=function(y,pi){
 
 
 pi = pi.lm(Col.lm2, College.test)
-lm.coverage = coverage(College.test$Apps, pi)
+lm.coverage2 = coverage(College.test$Apps, pi)
 
 
 
@@ -468,7 +466,10 @@ pi.poi = function(object, newdata, level=.95, nsim=10000) {
                                      .5 + level/2))}))
   return(pi)
 }
-
+K=10
+f  = ceiling(n/K)  # number of samples in each fold
+folds = sample(rep(1:K, f), n)
+NB.coverage = rep(NA, K)
 poi.coverage = rep(NA, K)
 for (i in 1:K) {
  col.train.12 = College[folds != i,]
@@ -606,12 +607,16 @@ RMSE_NB_TE<-rmse(College.test$Apps,Col.nb_te)
 
 results[,1]<-c(RMSE_OB1,RMSE_OB2,RMSE_GLM,RMSE_NB)
 results[,2]<-c(RMSE_TE1,RMSE_TE2,RMSE_GLM_TE,RMSE_NB_TE)
-results[,3]<-c(pval.lm1,pval.lm2,pval.lm3,pval.lm4)
-results[,4]<-c(mean(lm.coverage),NA,mean(poi.coverage),mean(NB.coverage))
+results[,4]<-c(pval.lm1,pval.lm2,pval.lm3,pval.lm4)
+results[,3]<-c(lm.coverage1,lm.coverage2,mean(poi.coverage),mean(NB.coverage))
 rownames(results)<-c("lm1","lm2","poisson","neg_bin")
 colnames(results)<-c("RMSE obs","RMSE test","Coverage","p-value")
 
+results
 ```
+\
+Answer: I think the best model is the negative binomial, which has a low in-sample RMSE, and the lowest out-of-sample RMSE. The coverage is 95.3%, which is pretty good. Coverage of 95.3% means that 95.5% of the whole sample are within the predicted range, which is a good indicator the total # of applications.
+\
 
 #NEED ANALYSIS
 14.  For your "best" model  provide a nicely formatted table (use `kable()` or `xtable()`) of relative risks and 95% confidence intervals.  Pick 5 of the most important variables and provide a paragraph that provides an interpretation of the parameters (and intervals) that can be provided to a university admissions officer about which variables increase admissions.  
