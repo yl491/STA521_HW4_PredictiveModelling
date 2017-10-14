@@ -1,10 +1,12 @@
 ---
-title: "HW4: Team [12]"
+title: 'HW4: Team [12]'
 author: "Yunxuan Li, Wenxin Liao, Yan Zhao"
 date: "Due October 13, 2017"
 output:
-  pdf_document: default
+  html_document:
+    df_print: paged
   html_notebook: default
+  pdf_document: default
 ---
 
 
