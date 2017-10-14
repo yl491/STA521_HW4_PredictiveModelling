@@ -95,10 +95,10 @@ anova(Col.lm)
 \
 Answer: plot 1: non-random. needs to transform response and some of the predictors. plot 2: heavier tail - unexplained larger variance. plot 4: no influential points.\
 
-#NEED ANALYSIS
+
 3. Generate 1000 replicate data sets using the coefficients from the model you fit above.  Using RMSE as a statistic, $$\sqrt{\sum_i(y^{\text{rep}} - \hat{y}_i^{\text{rep}})^2/n }$$, how does the RMSE from the model based on the training data compare to RMSE's based on the replicated data.  What does this suggest about model adequacy?   Provide a histogram of the RMSE's with a line showing the location of the observed RMSE and compute a p-value.  Hint:  write a function to calculate RMSE.
 
-#Need Analysis
+
 ```{r}
 
 rmse=function(y,ypred)
@@ -135,6 +135,8 @@ ggplot(df.fit1,aes(x=rmse.fit1))+geom_histogram()+geom_vline(xintercept=rmse.obs
 p_col1<-mean(rmse.observations<rm)
 
 ```
+\
+Analysis:RMSE from the model based on the training data lies in the middle to RMSE's distribution based on the replicated data. It means that our model is not overfitting, generating resonable RMSE, when the data set is changed.
 4. Build a second model, considering transformations of the response and predictors, possible interactions, etc with the goal of trying to achieve  a model where assumptions for linear regression are satisfied, providing justification for your choices.
 Comment on  how well the assumptions are met and and issues that diagnostic plots may reveal.
 ```{r}
@@ -162,7 +164,7 @@ Answer: 1) we choose transformation by the the result of powertransform function
 Together, this is a better model. (Notice that the $R^2$ of model 2 is higher than that of model 1)
 \
 
-#NEED ANALYSIS
+
 5.  Repeat the predictive checks described in problem 3, but using your model from problem 4.  If you transform the response, you will need to back transform  data to the original units in order to compute the RMSE in the original units.  Does this suggest that the model is adequate?  Do the two graphs provide information about which model is better?
 ```{r}
 nsim=1000
@@ -191,6 +193,9 @@ ggplot(df.fit2,aes(x=rmse.fit2))+geom_histogram()+geom_vline(xintercept=rmse.obs
 
 
 ```
+\
+Analysis:
+RMSE from the model based on the training data lies far left to RMSE's distribution based on the replicated data. It means that our model maybe overfiting, generating small RMSE for the training data while generating big RMSE, when the data set is changed,meaning that the model does not explained the data well.
 6. Use your two fitted models to predict the number of applications for the testing data, `College.test`.  Plot the predicted residuals $y_i - \hat{y}_i$  versus the predictions.  Are there any cases where the model does a poor job of predicting?  Compute the RMSE using the test data
 where now RMSE = $\sqrt{\sum_{i = 1}^{n.test}(y_i - \hat{y}_i)^2/n.test}$ where the sum is over the test data.  Which model is better for the out of sample prediction?
 ```{r}
@@ -235,7 +240,7 @@ Looking at the residual deviance, 181277 >> 575 df: also an evidence of lack of 
 \
 
 
-#NEED ANALYSIS
+
 8.  Generate 1000 replicate data sets using the coefficients from the Poisson model you fit above.  Using RMSE as a statistic, $\sqrt{\sum_i(y^{\text{rep}} - \hat{y}_i^{\text{rep}})^2/n }$, how does the RMSE from the model based on the training data compare to RMSE's based on the replicated data.  What does this suggest about model adequacy?   Provide a histogram of the RMSE's with a line showing the location of the observed RMSE and compute a p-value.  
 
 \Answer: the RMSE based on the training data is 1172.726. RMSE based on replicated data is 
@@ -249,8 +254,8 @@ rm3=c()
 for(i in 1:nsim){1
   mu=exp(X%*%sim.apps.glm2@coef[i,])
   y.rep=rpois(n,lambda=mu)
-   #newlm3<-glm(y.rep~X,family=poisson(link="log"))
-   #yhat<-predict(newlm3,type="response")
+  newlm3<-glm(y.rep~X,family=poisson(link="log"))
+  yhat<-predict(newlm3,type="response")
   
     rm3[i]<-rmse(y.rep,mu)
   }
@@ -260,16 +265,15 @@ poi.yhat.train=predict(col.glm,type="response")
 rmse.observations<-rmse(College.train$Apps,poi.yhat.train)
 pval.lm3=sum(rm3>rmse.observations)/length(rm3)
 df.fit3<-data.frame(rmse.fit3=rm3)
-#ggplot(df.fit3,aes(x=df.fit3$rmse.fit3))+geom_histogram()+geom_vline(xintercept=rmse.observations,col=2)#
-#use hist instead. - YL
-hist(rm3)
-abline(v=rmse.observations,col="red")
+ggplot(df.fit3,aes(x=df.fit3$rmse.fit3))+geom_histogram()+geom_vline(xintercept=rmse.observations,col=2)#
 pval.lm3
 
 
 mean(rm3>rmse.observations)
 
 ```
+\
+RMSE from the model based on the training data lies far right to RMSE's distribution based on the replicated data. It means that our model explain things well because it cope with various cases well,generating small RMSE for the replicate data, when the data set is changed.
 9.  Using the test data set, calculate the RMSE for the test data using the predictions from the Poisson model.  How does this compare to the RMSE based on the observed data?  Is this model better than the linear regression models in terms of out of sample prediction?
 ```{r}
 rmse = function(y, ypred) {
@@ -350,7 +354,9 @@ ggplot(df.fit4,aes(x=rmse.fit4))+geom_histogram()+geom_vline(xintercept=rmse.obs
 hist(rm4)
 abline(v=rmse.observations.11)
 ```
-
+\
+Analysis:
+RMSE from the model based on the training data lies far left to RMSE's distribution based on the replicated data. It means that our model maybe overfiting, generating small RMSE for the training data while generating big RMSE, when the data set is changed,meaning that the model does not explained the data well.
 12.  While RMSE is a popular summary for model goodness of fit, coverage of confidence intervals is an alternative. For each case in the test set, find a 95% prediction interval.  Now evaluate if the response is in the test data are inside or outside of the intervals.   If we have the correct coverage, we would expect that at least 95\% of the intervals would contain the test cases. Write a function to calculate coverage (the input should be the fitted model object and the test data-frame) and then evaluate coverage for each of the  models that you fit  (the two normal, the  Poisson and the negative binomial).  Include plots of the confidence intervals versus case number ordered by the prediction, with the left out data added as points.  Comment on the plots, highlighting any unusual colleges where the model predicts poorly.
 Linear Model 1
 ```{r}
@@ -611,22 +617,28 @@ results
 Answer: I think the best model is the negative binomial, which has a low in-sample RMSE, and the lowest out-of-sample RMSE. The coverage is 95.3%, which is pretty good. Coverage of 95.3% means that 95.5% of the whole sample are within the predicted range, which is a good indicator the total # of applications.
 \
 
-#NEED ANALYSIS
+
 14.  For your "best" model  provide a nicely formatted table (use `kable()` or `xtable()`) of relative risks and 95% confidence intervals.  Pick 5 of the most important variables and provide a paragraph that provides an interpretation of the parameters (and intervals) that can be provided to a university admissions officer about which variables increase admissions.  
 ```{r}
-table<-matrix(NA,20,3)
+table<-matrix(NA,7,3)
 j=1 
-for(i in rownames(coefficients(summary(glm3)))){
-  table[j,1]<-exp((summary(glm3)$coefficients[j,1])+(summary(glm3)$coefficients[j,2])*1.96)
-  table[j,2]<-exp((summary(glm3)$coefficients[j,1])-(summary(glm3)$coefficients[j,2])*1.96)
-  table[j,3]<-exp(summary(glm3)$coefficients[j,1])
+for(i in rownames(coefficients(summary(col.train.nb)))){
+  table[j,1]<-exp((summary(col.train.nb)$coefficients[j,1])+(summary(col.train.nb)$coefficients[j,2])*1.96)
+  table[j,2]<-exp((summary(col.train.nb)$coefficients[j,1])-(summary(col.train.nb)$coefficients[j,2])*1.96)
+  table[j,3]<-exp(summary(col.train.nb)$coefficients[j,1])
   j=j+1
 }
-colnames(table)<-c("lower bound 95% confidence interval","upper bound 95% confidence interval", "relative risk")
-rownames(table)<-rownames(coefficients(summary(glm3)))
+colnames(table)<-c("upper bound 95% confidence interval","lower bound 95% confidence interval", "relative risk")
+rownames(table)<-rownames(coefficients(summary(col.train.nb)))
 
 kable(table)
 ```
+\
+With one unit increase in graduaction rate, the odds of application will be one unit bigger on average. And 95% of the time, the odds of application will lie between 1.006 to 1.001 unit bigger range.
+With one unit increase in log of number of full time undergraduate students , the odds of application will be 2.5 times bigger on average. And 95% of the time, the odds of application will lie between 2.4 to 2.6 unit bigger range.
+With one unit increase in log of number of Instructional expenditure per student, the odds of application will be 1.3 times bigger on average. And 95% of the time, the odds of application will lie between 1.2 to 1.4 unit bigger range.
+With one unit increase in log of number of room and board costs, the odds of application will be 1.6 times bigger on average. And 95% of the time, the odds of application will lie between 1.3 to 1.9 unit bigger range.
+With one unit increase in square of number of Pct. alumni who donate, the odds of application will be one unit bigger on average. And 95% of the time, the odds of application will lie around one unit bigger range.
 ### Some Theory   
 
 
