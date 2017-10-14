@@ -299,13 +299,13 @@ plot(col.train.nb)
 
 #L
 ```
-#NEED ANALYSIS
+
 11. Carry out the predictive checks for the negative model model using simulated replicates with RMSE and add RMSE from the test data and observed data to your plot.  What do these suggest about 1) model adequacy and 2) model comparison?  Which model out of all that you have fit do you recommend?  
 
 
 \
 Answer: The mean value of RMSE of simulated replicates under negative binomial model is 1765.1 The RMSE of train data is 1261.002 and the RMSE of test data is 2666.5. Since the RMSE of train data is significantly smaller than RMSE of test data, it might suggest overfitting of the model.
-For Possion model, RMSE of train data is 1172.726 and the RMSE of test data is 2568.249. The negative binomial is better than the possion model.
+For Possion model, RMSE of train data is 1172.726 and the RMSE of test data is 2568.249. The negative binomial is better than the possion model. I would recommend negative binomial model compare to the possion model.
 
 \
 ```{r}
