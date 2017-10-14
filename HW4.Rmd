@@ -240,7 +240,7 @@ Looking at the residual deviance, 181277 >> 575 df: also an evidence of lack of 
 \
 
 
-#NEED ANALYSIS
+
 8.  Generate 1000 replicate data sets using the coefficients from the Poisson model you fit above.  Using RMSE as a statistic, $\sqrt{\sum_i(y^{\text{rep}} - \hat{y}_i^{\text{rep}})^2/n }$, how does the RMSE from the model based on the training data compare to RMSE's based on the replicated data.  What does this suggest about model adequacy?   Provide a histogram of the RMSE's with a line showing the location of the observed RMSE and compute a p-value.  
 
 \Answer: the RMSE based on the training data is 1172.726. RMSE based on replicated data is 
@@ -254,8 +254,8 @@ rm3=c()
 for(i in 1:nsim){1
   mu=exp(X%*%sim.apps.glm2@coef[i,])
   y.rep=rpois(n,lambda=mu)
-   #newlm3<-glm(y.rep~X,family=poisson(link="log"))
-   #yhat<-predict(newlm3,type="response")
+  newlm3<-glm(y.rep~X,family=poisson(link="log"))
+  yhat<-predict(newlm3,type="response")
   
     rm3[i]<-rmse(y.rep,mu)
   }
@@ -265,16 +265,15 @@ poi.yhat.train=predict(col.glm,type="response")
 rmse.observations<-rmse(College.train$Apps,poi.yhat.train)
 pval.lm3=sum(rm3>rmse.observations)/length(rm3)
 df.fit3<-data.frame(rmse.fit3=rm3)
-#ggplot(df.fit3,aes(x=df.fit3$rmse.fit3))+geom_histogram()+geom_vline(xintercept=rmse.observations,col=2)#
-#use hist instead. - YL
-hist(rm3)
-abline(v=rmse.observations,col="red")
+ggplot(df.fit3,aes(x=df.fit3$rmse.fit3))+geom_histogram()+geom_vline(xintercept=rmse.observations,col=2)#
 pval.lm3
 
 
 mean(rm3>rmse.observations)
 
 ```
+\
+RMSE from the model based on the training data lies far right to RMSE's distribution based on the replicated data. It means that our model explain things well because it cope with various cases well,generating small RMSE for the replicate data, when the data set is changed.
 9.  Using the test data set, calculate the RMSE for the test data using the predictions from the Poisson model.  How does this compare to the RMSE based on the observed data?  Is this model better than the linear regression models in terms of out of sample prediction?
 ```{r}
 rmse = function(y, ypred) {
@@ -618,7 +617,7 @@ results
 Answer: I think the best model is the negative binomial, which has a low in-sample RMSE, and the lowest out-of-sample RMSE. The coverage is 95.3%, which is pretty good. Coverage of 95.3% means that 95.5% of the whole sample are within the predicted range, which is a good indicator the total # of applications.
 \
 
-#NEED ANALYSIS
+
 14.  For your "best" model  provide a nicely formatted table (use `kable()` or `xtable()`) of relative risks and 95% confidence intervals.  Pick 5 of the most important variables and provide a paragraph that provides an interpretation of the parameters (and intervals) that can be provided to a university admissions officer about which variables increase admissions.  
 ```{r}
 table<-matrix(NA,7,3)
@@ -629,11 +628,17 @@ for(i in rownames(coefficients(summary(col.train.nb)))){
   table[j,3]<-exp(summary(col.train.nb)$coefficients[j,1])
   j=j+1
 }
-colnames(table)<-c("lower bound 95% confidence interval","upper bound 95% confidence interval", "relative risk")
+colnames(table)<-c("upper bound 95% confidence interval","lower bound 95% confidence interval", "relative risk")
 rownames(table)<-rownames(coefficients(summary(col.train.nb)))
 
 kable(table)
 ```
+\
+With one unit increase in graduaction rate, the odds of application will be one unit bigger on average. And 95% of the time, the odds of application will lie between 1.006 to 1.001 unit bigger range.
+With one unit increase in log of number of full time undergraduate students , the odds of application will be 2.5 times bigger on average. And 95% of the time, the odds of application will lie between 2.4 to 2.6 unit bigger range.
+With one unit increase in log of number of Instructional expenditure per student, the odds of application will be 1.3 times bigger on average. And 95% of the time, the odds of application will lie between 1.2 to 1.4 unit bigger range.
+With one unit increase in log of number of room and board costs, the odds of application will be 1.6 times bigger on average. And 95% of the time, the odds of application will lie between 1.3 to 1.9 unit bigger range.
+With one unit increase in square of number of Pct. alumni who donate, the odds of application will be one unit bigger on average. And 95% of the time, the odds of application will lie around one unit bigger range.
 ### Some Theory   
 
 
